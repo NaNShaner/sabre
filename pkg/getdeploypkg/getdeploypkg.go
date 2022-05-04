@@ -6,48 +6,52 @@ package getdeploypkg
 
 import (
 	"awesomeProject/pkg/config"
+	"awesomeProject/pkg/sabstruct"
 	"bufio"
 	"fmt"
+	"github.com/c4milo/unpackit"
 	"io"
 	"net/http"
 	"os"
 	"path"
-	"time"
+	"strings"
 )
 
 const (
-	PkgLocalPathForLinux = "./" // 默认的安装包以及配置文件的存放地方，可以根据yam文件覆盖
+	PkgLocalPathForLinux = "/tmp/" // 默认的安装包以及配置文件的存放地方，可以根据yam文件覆盖
 )
 
-type DeployAction struct {
-	Install   string // 部署
-	ReInstall string // 重装
-	apply     string // 配置修改
-	OffLine   string // 下线
-	Start     string //	启动
-	Stop      string //	停止
-	Restop    string // 重启
-}
+//type DeployAction struct {
+//	Install   string // 部署
+//	ReInstall string // 重装
+//	apply     string // 配置修改
+//	OffLine   string // 下线
+//	Start     string //	启动
+//	Stop      string //	停止
+//	Restop    string // 重启
+//}
+//
+//type MiddInfo struct {
+//	NameSpace  string
+//	MidType    string   // 中间件的类型
+//	MidVersion string   // 中间件的版本
+//	MidRunType []string // 运行模式，集群、主备、冷备等等
+//}
+//
+//type DeployPkg struct {
+//	timer        time.Time // 执行时间
+//	PkgFromUrl   string    // 安装所需文件连接
+//	ConfigFile   string    // 安装所需配置文件
+//	MiddInfo               // 中间件相关信息
+//	DeployAction           // 执行动作
+//}
 
-type MiddInfo struct {
-	NameSpace  string
-	MidType    string   // 中间件的类型
-	MidVersion string   // 中间件的版本
-	MidRunType []string // 运行模式，集群、主备、冷备等等
-}
-
-type DeployPkg struct {
-	timer        time.Time // 执行时间
-	PkgFromUrl   string    // 安装所需文件连接
-	ConfigFile   string    // 安装所需配置文件
-	MiddInfo               // 中间件相关信息
-	DeployAction           // 执行动作
-}
+type Basest sabstruct.Config
 
 // GetDeployPkgFromUrl 从服务端获取安装包或者配置文件等
-func (u *DeployPkg) GetDeployPkgFromUrl() (string, error) {
+func (u *Basest) GetDeployPkgFromUrl() (string, error) {
 	pkgPath := PkgLocalPathForLinux
-	pkgUrl := u.PkgFromUrl
+	pkgUrl := u.Spec.PKGDownloadPath
 	fileName := path.Base(pkgUrl)
 	pkgBasPath := pkgPath + fileName
 	fmt.Printf("%s", pkgUrl)
@@ -97,4 +101,34 @@ func IsFileExist(filename string) bool {
 
 func GetConfigFile() string {
 	return config.GetConfigSet()
+}
+
+// UnpackPkg 解压下载的.tar.gz 文件包
+// TODO 解压目录下如已有同名文件，则报错
+func (u *Basest) UnpackPkg(tarFileAbsPath string) error {
+	tarFileName := path.Base(tarFileAbsPath)
+	//fmt.Printf("%s ==> %s", tarFileName, path.Join(PkgLocalPathForLinux, tarFileName))
+	if !IsFileExist(path.Join(PkgLocalPathForLinux, tarFileName)) {
+		return fmt.Errorf("failed to Unpack tar file: the file is already exist")
+	}
+	tarFile, err := os.Open(tarFileAbsPath)
+	defer tarFile.Close()
+	if err != nil {
+		return fmt.Errorf("failed to open tar file: %v", err)
+	}
+	_, err = unpackit.Unpack(tarFile, PkgLocalPathForLinux)
+	if err != nil {
+		return fmt.Errorf("failed to Unpack tar file: %v", err)
+	}
+	return nil
+
+}
+
+// createFile 创建文件
+func createFile(name string) (*os.File, error) {
+	err := os.MkdirAll(string([]rune(name)[0:strings.LastIndex(name, "/")]), 0755)
+	if err != nil {
+		return nil, err
+	}
+	return os.Create(name)
 }

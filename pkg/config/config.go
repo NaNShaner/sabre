@@ -5,7 +5,6 @@
 package config
 
 import (
-	"awesomeProject/pkg/yamlfmt"
 	"os"
 )
 
@@ -14,37 +13,11 @@ import (
 //	seq string
 //}
 
-type ServerConfig struct {
-	ApiVersion string `json:"apiVersion"`
-	Kind       string `json:"kind"`
-	Metadata   `json:"metadata"`
-	Spec       `json:"spec"`
-}
-
-type Metadata struct {
-	Namespace string
-}
-
-type Spec struct {
-	MidServerUrl string
-}
-
-
 // GetConfigSet ~/.sabrefig/config
 func GetConfigSet() string {
 	homeDir := os.Getenv("HOME")
 	configPaht := ".sabrefig"
 	configFile := "config"
 	seq := "/"
-	return seq+homeDir+configPaht+configFile
+	return seq + homeDir + configPaht + configFile
 }
-
-func GetConfigYaml(fpath string) ([]byte, error) {
-	var sc ServerConfig
-	yamlFmt, err := yamlfmt.YamlFmt(fpath, sc)
-	if err != nil {
-		return nil, err
-	}
-	return yamlFmt, nil
-}
-

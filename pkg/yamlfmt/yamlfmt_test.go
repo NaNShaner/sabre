@@ -9,8 +9,5 @@ func TestYamlFmt(t *testing.T) {
 	if err != nil {
 		return
 	}
-	t.Logf("%q", yamlFmt)
+	t.Logf("%v", yamlFmt)
 }
-
-
-
