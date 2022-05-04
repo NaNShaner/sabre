@@ -1,0 +1,14 @@
+apiversion: apps/v1
+kind: Deployment
+metadata:
+  namespace: MNPP
+  netarea: app
+  appname: entry
+spec:
+  midtype: tomcat
+  version: 7.0.78
+  port: 8099
+  installpath: /u01
+  user:
+    name: miduser
+    group: miduser

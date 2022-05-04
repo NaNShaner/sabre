@@ -1,0 +1,6 @@
+apiversion: apps/v1
+kind: Config
+metadata:
+  namespace: default
+spec:
+  midserverurl: "http://124.71.219.53:8001/"
