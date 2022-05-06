@@ -1,10 +1,16 @@
 package sabstruct
 
-import "time"
+import (
+	"time"
+)
 
+// Config 平台配置
+// Kind 资源类型 中间件、网络、基础设施
+//	Deployment:资源类型	config:配置文件
 type Config struct {
-	ApiVersion   string `json:"apiVersion"` //	接口版本
-	Kind         string `json:"kind"`       //	资源类型 中间件、网络、基础设施
+	ApiVersion   string `json:"apiVersion"`
+	Kind         string `json:"kind"`
+	Server       string `json:"server"`
 	Metadata     `json:"metadata"`
 	Spec         `json:"spec"`
 	DeployAction `json:"action"`
@@ -26,6 +32,7 @@ type Spec struct {
 	PKGDownloadPath string   `json:"pkgDownloadPath"`
 	MidRunType      []string `json:"run_type,omitempty"` // 运行模式，集群、主备、冷备等等
 	User            `json:"user"`
+	DefaultConfig   `json:"default,omitempty"`
 }
 
 // User 中间件所属用户信息
@@ -44,4 +51,23 @@ type DeployAction struct {
 	Start     string    `json:"start"`           //	启动
 	Stop      string    `json:"stop"`            //	停止
 	Restop    string    `json:"restop"`          // 重启
+}
+
+// Jdk 在.sabrefig/config 文件的默认配置
+type Jdk struct {
+	Javaopts string `json:"javaopts"`
+}
+
+// Tomcat 在.sabrefig/config 文件的默认配置
+type Tomcat struct {
+	Javaopts      string `json:"javaopts"`
+	ListeningPort int    `json:"listeningport"`
+	AjpPort       int    `json:"ajpport"`
+	ShutdownPort  int    `json:"shutdownport"`
+}
+
+// DefaultConfig 各类资源在.sabrefig/config 文件的默认配置
+type DefaultConfig struct {
+	Jdk    `json:"jdk"`
+	Tomcat `json:"tomcat"`
 }

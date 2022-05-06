@@ -7,6 +7,7 @@ package yamlfmt
 import (
 	"awesomeProject/pkg/sabstruct"
 	"encoding/json"
+	"fmt"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
@@ -36,6 +37,7 @@ func YamlFmt(f string, s sabstruct.Config) (*sabstruct.Config, error) {
 	//使用yaml包，把读取到的data格式化后解析到config实例中
 	err := yaml.Unmarshal(data, &s)
 	if err != nil {
+		fmt.Printf("==> %q", err)
 		panic("decode error")
 	}
 

@@ -14,6 +14,7 @@ import (
 //}
 
 // GetConfigSet ~/.sabrefig/config
+// defult JAVA_OPTS="-server -Xms1024M -Xmx1024M -Xss512k"
 func GetConfigSet() string {
 	homeDir := os.Getenv("HOME")
 	configPaht := ".sabrefig"

@@ -7,6 +7,7 @@ package getdeploypkg
 import (
 	"awesomeProject/pkg/config"
 	"awesomeProject/pkg/sabstruct"
+	"awesomeProject/pkg/yamlfmt"
 	"bufio"
 	"fmt"
 	"github.com/c4milo/unpackit"
@@ -14,7 +15,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"strings"
 )
 
 const (
@@ -99,15 +99,11 @@ func IsFileExist(filename string) bool {
 	return false
 }
 
-func GetConfigFile() string {
-	return config.GetConfigSet()
-}
-
 // UnpackPkg 解压下载的.tar.gz 文件包
-// TODO 解压目录下如已有同名文件，则报错
 func (u *Basest) UnpackPkg(tarFileAbsPath string) error {
 	tarFileName := path.Base(tarFileAbsPath)
-	//fmt.Printf("%s ==> %s", tarFileName, path.Join(PkgLocalPathForLinux, tarFileName))
+
+	// 解压目录下如已有同名文件，则报错
 	if !IsFileExist(path.Join(PkgLocalPathForLinux, tarFileName)) {
 		return fmt.Errorf("failed to Unpack tar file: the file is already exist")
 	}
@@ -124,11 +120,19 @@ func (u *Basest) UnpackPkg(tarFileAbsPath string) error {
 
 }
 
-// createFile 创建文件
-func createFile(name string) (*os.File, error) {
-	err := os.MkdirAll(string([]rune(name)[0:strings.LastIndex(name, "/")]), 0755)
+// SetConfigFile 修改配置文件
+// m: 顶层的结构体
+// f: 文件文件的绝对路径
+func (u *Basest) SetConfigFile(m sabstruct.Config, f string) {
+	defalutConfig := config.GetConfigSet()
+	var Config sabstruct.Config
+	yamlFmt, err := yamlfmt.YamlFmt(defalutConfig, Config)
 	if err != nil {
-		return nil, err
+		return
 	}
-	return os.Create(name)
+
+	if m.Spec.Midtype == "Tomcat" {
+		m.Spec.Tomcat.Javaopts = yamlFmt.Spec.Jdk.Javaopts
+	}
+
 }
