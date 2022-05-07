@@ -5,20 +5,19 @@
 package config
 
 import (
-	"os"
+	"awesomeProject/pkg/util/aboutuser"
+	"os/user"
 )
 
-//type str struct {
-//	s []string
-//	seq string
-//}
-
-// GetConfigSet ~/.sabrefig/config
+// GetConfigSet /root/.sabrefig/config
 // defult JAVA_OPTS="-server -Xms1024M -Xmx1024M -Xss512k"
 func GetConfigSet() string {
-	homeDir := os.Getenv("HOME")
+	u := user.User{Username: "root"}
+	rootDir, err := aboutuser.GetUserHomeDir(u)
+	if err != nil {
+		return ""
+	}
 	configPaht := ".sabrefig"
 	configFile := "config"
-	seq := "/"
-	return seq + homeDir + configPaht + configFile
+	return rootDir + configPaht + configFile
 }

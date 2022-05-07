@@ -42,47 +42,49 @@ type JDKConfigFile struct {
 
 // Changefile 修改配置文件
 // TODO: 替换关键字内容
-func Changefile(f string, r ...map[string]string) {
+func Changefile(f string, r ...map[string]string) error {
+	var filePerLine []string
 	in, err := os.Open(f)
 	if err != nil {
-		fmt.Println("open file fail:", err)
-		os.Exit(-1)
+		return fmt.Errorf("打开%s文件失败: %s", f, err)
 	}
 	defer in.Close()
-	newF := f + "now"
-	out, err := os.OpenFile(newF, os.O_RDWR|os.O_CREATE, 0766)
+	out, err := os.OpenFile(f, os.O_RDWR|os.O_CREATE, 0766)
 	if err != nil {
-		fmt.Println("Open write file fail:", err)
-		os.Exit(-1)
+		return fmt.Errorf("打开%s文件失败: %s", f, err)
 	}
 	defer out.Close()
 
 	br := bufio.NewReader(in)
-	index := 1
-	for _, m := range r {
-		// k 是在配置文件中已经标记可以替换的文件
-		// v 是被替换的内容
-		for k, v := range m {
-
-			for {
-				line, _, err := br.ReadLine()
-				if err == io.EOF {
-					break
+	for {
+		line, _, err := br.ReadLine()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("读取%s文件失败: %s", f, err)
+		}
+		for _, m := range r {
+			// k 是在配置文件中已经标记可以替换的文件
+			// v 是被替换的内容
+			for k, v := range m {
+				if strings.Contains(string(line), k) {
+					newLine := strings.Replace(string(line), k, v, -1)
+					filePerLine = append(filePerLine, newLine)
+				} else {
+					filePerLine = append(filePerLine, string(line))
 				}
-				if err != nil {
-					fmt.Println("read err:", err)
-					os.Exit(-1)
-				}
-				newLine := strings.Replace(string(line), k, v, -1)
-				_, err = out.WriteString(newLine + "\n")
-				if err != nil {
-					fmt.Println("write to file fail:", err)
-					os.Exit(-1)
-				}
-				fmt.Println("done ", index)
-				index++
 			}
 		}
-
 	}
+
+	for _, s := range filePerLine {
+		fmt.Println(s + "\n")
+		_, err = out.WriteString(s + "\n")
+		if err != nil {
+			return fmt.Errorf("写%s文件失败: %s", f, err)
+		}
+	}
+	return nil
+
 }

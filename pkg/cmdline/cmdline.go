@@ -7,8 +7,10 @@ package cmdline
 import (
 	"awesomeProject/pkg/getdeploypkg"
 	"awesomeProject/pkg/sabstruct"
+	"awesomeProject/pkg/util/aboutuser"
 	"awesomeProject/pkg/yamlfmt"
 	"fmt"
+	"os/user"
 )
 
 //var rootCmd = &cobra.Command{
@@ -56,5 +58,19 @@ func DeployTomcat() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	u := user.User{
+		Username: d.Spec.User.Name,
+	}
+
+	isUserExist, err := aboutuser.IsUserExist(u)
+	if err != nil {
+		return "", err
+	}
+	// 判断用户yaml文件中需求的用户在服务器本地是否存在
+	if isUserExist.Username == d.Name {
+
+	}
+
 	return pkgFromUrl, nil
 }

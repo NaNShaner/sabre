@@ -5,11 +5,20 @@ metadata:
   netarea: app
   appname: entry
 spec:
-  pkgdownloadpath: "http://124.71.219.53:8001/uploads/uploads/2022/04/30/apache-tomcat-7.0.75.tar.gz"
+  pkgdownloadpath: "http://124.71.219.53:8001/uploads/uploads/2022/05/07/apache-tomcat-7.0.75.tar.gz"
   midtype: tomcat
   version: 7.0.78
   port: 8099
-  installpath: /u01
+  installpath: /u01/app
   user:
     name: miduser
     group: miduser
+  defaultconfig:
+    jdk:
+      javaopts: -server -Xms1024M -Xmx1024M -Xss512k -XX:PermSize=1024M -XX:MaxPermSize=1024M -XX:+DisableExplicitGC -XX:MaxTenuringThreshold=31 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+CMSParallelRemarkEnabled -XX:+UseCMSCompactAtFullCollection -XX:LargePageSizeInBytes=128m -XX:+UseFastAccessorMethods -XX:+UseCMSInitiatingOccupancyOnly -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintHeapAtGC -XX:+HeapDumpOnOutOfMemoryError -XX:+HeapDumpOnCtrlBreak -Djava.awt.headless=true
+    tomcat:
+      listeningport: 8099
+      ajpport: 8009
+      shutdownport: 8005
+  deployaction:
+    action: "Install"
