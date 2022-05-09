@@ -1,13 +1,13 @@
 package install
 
 import (
-	"awesomeProject/pkg/config"
-	"awesomeProject/pkg/sabstruct"
-	"awesomeProject/pkg/util/changefile"
-	"awesomeProject/pkg/util/commontools"
-	"awesomeProject/pkg/yamlfmt"
 	"fmt"
 	"path"
+	"sabre/pkg/config"
+	"sabre/pkg/sabstruct"
+	"sabre/pkg/util/changefile"
+	"sabre/pkg/util/commontools"
+	"sabre/pkg/yamlfmt"
 	"time"
 )
 

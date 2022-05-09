@@ -1,9 +1,13 @@
 package main
 
 import (
-	"awesomeProject/pkg/cmdline"
+	//"sabre/pkg/cmdline"
 	"fmt"
 	"github.com/spf13/cobra"
+	"sabre/pkg/sabstruct"
+	"sabre/pkg/util/commontools"
+	Ti "sabre/pkg/util/tomcat/install"
+	"sabre/pkg/yamlfmt"
 )
 
 func main() {
@@ -43,16 +47,22 @@ func main() {
 		Long:  `download pkg from server, and deploy it.`,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			//for i := 0; i < echoTimes; i++ {
-			//	fmt.Println("Echo: " + strings.Join(args, " "))
-			//}
-			//fmt.Println("Echo: " + strings.Join(args, " "))
-
-			tomcat, err := cmdline.DeployTomcat()
+			// f := "/Users/bijingrui/sabre/pkg/getdeploypkg/tomcatInstll.yaml"
+			f := "/opt/sabre/pkg/getdeploypkg/tomcatInstll.yaml"
+			yamlFmt, err := yamlfmt.YamlFmt(f, sabstruct.Config{})
+			printResultJson, err := yamlfmt.PrintResultJson((*commontools.Basest)(yamlFmt))
 			if err != nil {
 				return
 			}
-			fmt.Printf(tomcat)
+			fmt.Printf("%s\n", printResultJson)
+			if err != nil {
+				return
+			}
+			_, err = Ti.TomcatInstall((*commontools.Basest)(yamlFmt))
+			if err != nil {
+				fmt.Printf("install fail %s", err)
+			}
+			fmt.Printf("tomcat install done")
 		},
 	}
 	// var tomcat string

@@ -5,8 +5,8 @@
 package config
 
 import (
-	"awesomeProject/pkg/util/aboutuser"
 	"os/user"
+	"sabre/pkg/util/aboutuser"
 )
 
 // GetConfigSet /root/.sabrefig/config

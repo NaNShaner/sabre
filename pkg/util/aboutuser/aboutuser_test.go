@@ -1,7 +1,13 @@
 package aboutuser
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestIsUserExist(t *testing.T) {
-	IsUserExist("bijingrui", "staff")
+	exist, err := IsUserExist("miduser")
+	if err != nil {
+		return
+	}
+	t.Log(exist)
 }

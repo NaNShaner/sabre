@@ -63,10 +63,10 @@ type Jdk struct {
 // Tomcat 在.sabrefig/config 文件的默认配置
 type Tomcat struct {
 	Javaopts      string `json:"javaopts"`
-	ListeningPort int    `json:"listeningport"`
-	AjpPort       int    `json:"ajpport"`
-	AjpRirectPort int    `json:"ajprirectport"`
-	ShutdownPort  int    `json:"shutdownport"`
+	ListeningPort string `json:"listeningport"`
+	AjpPort       string `json:"ajpport"`
+	AjpRirectPort string `json:"ajprirectport"`
+	ShutdownPort  string `json:"shutdownport"`
 }
 
 // DefaultConfig 各类资源在.sabrefig/config 文件的默认配置

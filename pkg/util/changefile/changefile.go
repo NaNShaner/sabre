@@ -41,6 +41,8 @@ type JDKConfigFile struct {
 }
 
 // Changefile 修改配置文件
+// f 为需要替换内容的文件的绝对路径
+// r 为map类型，k为替换内容的标识，v为替换后的内容
 // TODO: 替换关键字内容
 func Changefile(f string, r ...map[string]string) error {
 	var filePerLine []string
@@ -79,7 +81,6 @@ func Changefile(f string, r ...map[string]string) error {
 	}
 
 	for _, s := range filePerLine {
-		fmt.Println(s + "\n")
 		_, err = out.WriteString(s + "\n")
 		if err != nil {
 			return fmt.Errorf("写%s文件失败: %s", f, err)

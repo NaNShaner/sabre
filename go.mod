@@ -1,4 +1,4 @@
-module awesomeProject
+module sabre
 
 go 1.17
 

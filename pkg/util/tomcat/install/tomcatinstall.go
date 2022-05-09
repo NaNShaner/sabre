@@ -1,13 +1,13 @@
 package tomcatinstall
 
 import (
-	"awesomeProject/pkg/config"
-	"awesomeProject/pkg/sabstruct"
-	"awesomeProject/pkg/util/changefile"
-	"awesomeProject/pkg/util/commontools"
-	"awesomeProject/pkg/yamlfmt"
 	"fmt"
 	"path"
+	"sabre/pkg/config"
+	"sabre/pkg/sabstruct"
+	"sabre/pkg/util/changefile"
+	"sabre/pkg/util/commontools"
+	"sabre/pkg/yamlfmt"
 	"time"
 )
 
@@ -16,7 +16,7 @@ import (
 func TomcatInstall(m *commontools.Basest) (bool, error) {
 
 	if err := m.InstallCommonStep(); err != nil {
-		return false, fmt.Errorf("TomcatInstall 步骤执行失败%s", err)
+		return false, fmt.Errorf("TomcatInstall 步骤执行失败，%s", err)
 	}
 
 	// 如果用户未输入Tomcat的jvm参数，设置默认参数，默认参数来自/root/.sabrefig/config
@@ -34,24 +34,24 @@ func TomcatInstall(m *commontools.Basest) (bool, error) {
 	// 修改catalina.sh
 	catalinaReplace := make(map[string]string)
 	catalinaReplace["JAVAOPTS"] = m.Spec.DefaultConfig.Jdk.Javaopts
-	catalina := path.Join(m.Spec.InstallPath + "bin/catalina.sh")
+	catalina := path.Join(m.Spec.InstallPath + "/apache-tomcat-7.0.75/bin/catalina.sh")
 	catalinaReplaceErr := changefile.Changefile(catalina, catalinaReplace)
 	if catalinaReplaceErr != nil {
-		return false, fmt.Errorf("修改配置文件%s失败,%s", catalina, catalinaReplaceErr)
+		return false, fmt.Errorf("%s 修改配置文件%s失败,%s", m.Spec.InstallPath, catalina, catalinaReplaceErr)
 	}
 	// 修改server.xml
 	serverXmlReplace := make(map[string]string)
-	serverXmlReplace["shutdownport"] = m.Spec.DefaultConfig.Jdk.Javaopts
-	serverXmlReplace["listeningport"] = m.Spec.DefaultConfig.Jdk.Javaopts
-	serverXmlReplace["ajpport"] = m.Spec.DefaultConfig.Jdk.Javaopts
-	serverXmlReplace["ajprirectport"] = m.Spec.DefaultConfig.Jdk.Javaopts
-	serverXml := path.Join(m.Spec.InstallPath + "conf/server.xml")
+	serverXmlReplace["shutdownport"] = m.Spec.DefaultConfig.Tomcat.ShutdownPort
+	serverXmlReplace["listeningport"] = m.Spec.DefaultConfig.Tomcat.ListeningPort
+	serverXmlReplace["ajpport"] = m.Spec.DefaultConfig.Tomcat.AjpPort
+	serverXmlReplace["ajprirectport"] = m.Spec.DefaultConfig.Tomcat.AjpRirectPort
+	serverXml := path.Join(m.Spec.InstallPath + "/apache-tomcat-7.0.75/conf/server.xml")
 	serverXmlReplaceErr := changefile.Changefile(serverXml, serverXmlReplace)
 	if serverXmlReplaceErr != nil {
 		return false, fmt.Errorf("修改配置文件%s失败,%s", serverXml, serverXmlReplaceErr)
 	}
 	// 启动Tomcat
-	startUp := path.Join(m.Spec.InstallPath + "bin/start.sh")
+	startUp := path.Join(m.Spec.InstallPath + "/bin/start.sh")
 	startMiddleware, err := m.StartMiddleware(startUp, time.Duration(3))
 	if err != nil {
 		return false, err

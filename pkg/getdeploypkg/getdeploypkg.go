@@ -5,11 +5,11 @@
 package getdeploypkg
 
 import (
-	"awesomeProject/pkg/sabstruct"
-	"awesomeProject/pkg/util/commontools"
-	Ti "awesomeProject/pkg/util/tomcat/install"
-	"awesomeProject/pkg/yamlfmt"
 	"fmt"
+	"sabre/pkg/sabstruct"
+	"sabre/pkg/util/commontools"
+	Ti "sabre/pkg/util/tomcat/install"
+	"sabre/pkg/yamlfmt"
 )
 
 //import (

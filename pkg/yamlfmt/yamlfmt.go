@@ -5,12 +5,12 @@
 package yamlfmt
 
 import (
-	"awesomeProject/pkg/sabstruct"
 	"encoding/json"
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
+	"sabre/pkg/sabstruct"
 )
 
 // Config 创建一个结构体

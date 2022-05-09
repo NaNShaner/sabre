@@ -1,8 +1,6 @@
 package commontools
 
 import (
-	"awesomeProject/pkg/sabstruct"
-	"awesomeProject/pkg/util/aboutuser"
 	"bufio"
 	"context"
 	"fmt"
@@ -12,6 +10,8 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"sabre/pkg/sabstruct"
+	"sabre/pkg/util/aboutuser"
 	"time"
 )
 
@@ -30,10 +30,9 @@ func (u *Basest) GetDeployPkgFromUrl() (string, error) {
 	pkgUrl := u.Spec.PKGDownloadPath
 	fileName := path.Base(pkgUrl)
 	pkgBasPath := pkgPath + fileName
-	fmt.Printf("%s", pkgUrl)
 	res, err := http.Get(pkgUrl)
 	if err != nil {
-		fmt.Printf("A error occurred! %s", err)
+		fmt.Printf("A error occurred! %s\n", err)
 		return "", err
 	}
 	defer func(Body io.ReadCloser) {
@@ -59,7 +58,7 @@ func (u *Basest) GetDeployPkgFromUrl() (string, error) {
 			panic(err)
 		}
 		// fmt.Printf("Total length: %d", written)
-		return fileName, nil
+		return pkgBasPath, nil
 	}
 	return "", fmt.Errorf("%s 文件已存在\n", pkgBasPath)
 
@@ -73,16 +72,16 @@ func (u *Basest) UnpackPkg(tarFileAbsPath string) error {
 
 	// 解压目录下如已有同名文件，则报错
 	if !IsFileExist(path.Join(u.Spec.InstallPath, tarFileName)) {
-		return fmt.Errorf("failed to Unpack tar file: the file is already exist")
+		return fmt.Errorf("failed to Unpack tar file: the file is already exist\n")
 	}
 	tarFile, err := os.Open(tarFileAbsPath)
 	defer tarFile.Close()
 	if err != nil {
-		return fmt.Errorf("failed to open tar file: %v", err)
+		return fmt.Errorf("failed to open tar file: %v\n", err)
 	}
 	_, err = unpackit.Unpack(tarFile, u.Spec.InstallPath)
 	if err != nil {
-		return fmt.Errorf("failed to Unpack tar file: %v", err)
+		return fmt.Errorf("failed to Unpack tar file: %v\n", err)
 	}
 	return nil
 
@@ -113,7 +112,7 @@ func IsFileExist(filename string) bool {
 	if os.IsNotExist(err) {
 		return true
 	}
-	fmt.Printf("文件 %s 已存在， %v", info.Name(), err)
+	fmt.Printf("文件 %s 已存在， %v\n", info.Name(), err)
 	return false
 }
 
@@ -122,21 +121,23 @@ func (u *Basest) InstallCommonStep() error {
 	// 判断用户在服务器上是否存在，函数返回为bool值
 	isUserExist, userExistErr := aboutuser.IsUserExist(u.User.Name)
 	if userExistErr != nil {
-		return fmt.Errorf("用户%s不存在，%s", u.User.Name, userExistErr)
+		return fmt.Errorf("用户%s不存在，%s\n", u.User.Name, userExistErr)
 	}
 	// 如果用户存在
+	fmt.Printf("isUserExist: %v\n", isUserExist)
 	if isUserExist {
 		getPkgFromUrl, getPkgFromUrlErr := u.GetDeployPkgFromUrl()
 		if getPkgFromUrlErr != nil {
-			return fmt.Errorf("下载%s文件失败，%s", u.Spec.PKGDownloadPath, getPkgFromUrlErr)
+			return fmt.Errorf("下载%s文件失败，%s\n", u.Spec.PKGDownloadPath, getPkgFromUrlErr)
 		}
 		// 解压安装包，解压到 m.Spec.InstallPath 路径下
 		unpackPkgErr := u.UnpackPkg(getPkgFromUrl)
 		if unpackPkgErr != nil {
-			return fmt.Errorf("解压%s文件失败，%s", getPkgFromUrl, unpackPkgErr)
+			return fmt.Errorf("解压%s文件失败，%s\n", getPkgFromUrl, unpackPkgErr)
 		}
 	} else {
 		// 如果用户不存在
+		return fmt.Errorf("用户%s不存在\n", u.User.Name)
 	}
 	return nil
 }

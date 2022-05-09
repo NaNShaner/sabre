@@ -1,7 +1,7 @@
 package yamlfmt
 
 import (
-	"awesomeProject/pkg/sabstruct"
+	"sabre/pkg/sabstruct"
 	"testing"
 )
 
