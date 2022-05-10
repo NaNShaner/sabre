@@ -13,6 +13,8 @@ import (
 
 //TomcatInstall 用户及用户组(判断||新建)-下载安装包-解压-修改配置文件-安装校验(尝试启动，并进行健康检查，通过后关闭)
 //TODO：信息上送网关并入库
+//TODO：ajp port 暂不支持修改
+//TODO：shutdown port 暂不支持修改
 func TomcatInstall(m *commontools.Basest) (bool, error) {
 
 	if err := m.InstallCommonStep(); err != nil {
@@ -35,23 +37,22 @@ func TomcatInstall(m *commontools.Basest) (bool, error) {
 	catalinaReplace := make(map[string]string)
 	catalinaReplace["JAVAOPTS"] = m.Spec.DefaultConfig.Jdk.Javaopts
 	catalina := path.Join(m.Spec.InstallPath + "/apache-tomcat-7.0.75/bin/catalina.sh")
+	//replaceCmd := strings.Replace(`"sed -i "s/JAVAOPTS/abc/g" "`,"abc",catalinaReplace["JAVAOPTS"],-1) + catalina
+	//_, err := m.StartMiddleware(replaceCmd, time.Duration(3))
 	catalinaReplaceErr := changefile.Changefile(catalina, catalinaReplace)
 	if catalinaReplaceErr != nil {
-		return false, fmt.Errorf("%s 修改配置文件%s失败,%s", m.Spec.InstallPath, catalina, catalinaReplaceErr)
+		return false, catalinaReplaceErr
 	}
 	// 修改server.xml
 	serverXmlReplace := make(map[string]string)
-	serverXmlReplace["shutdownport"] = m.Spec.DefaultConfig.Tomcat.ShutdownPort
-	serverXmlReplace["listeningport"] = m.Spec.DefaultConfig.Tomcat.ListeningPort
-	serverXmlReplace["ajpport"] = m.Spec.DefaultConfig.Tomcat.AjpPort
-	serverXmlReplace["ajprirectport"] = m.Spec.DefaultConfig.Tomcat.AjpRirectPort
+	serverXmlReplace["listeningport"] = m.Spec.DefaultConfig.Tomcat.ShutdownPort
 	serverXml := path.Join(m.Spec.InstallPath + "/apache-tomcat-7.0.75/conf/server.xml")
 	serverXmlReplaceErr := changefile.Changefile(serverXml, serverXmlReplace)
 	if serverXmlReplaceErr != nil {
 		return false, fmt.Errorf("修改配置文件%s失败,%s", serverXml, serverXmlReplaceErr)
 	}
 	// 启动Tomcat
-	startUp := path.Join(m.Spec.InstallPath + "/bin/start.sh")
+	startUp := path.Join(m.Spec.InstallPath + "/apache-tomcat-7.0.75/bin/startup.sh")
 	startMiddleware, err := m.StartMiddleware(startUp, time.Duration(3))
 	if err != nil {
 		return false, err

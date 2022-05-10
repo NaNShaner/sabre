@@ -20,5 +20,6 @@ spec:
       listeningport: 8099
       ajpport: 8009
       shutdownport: 8005
+      ajprirectport: 8443
   deployaction:
     action: "Install"

@@ -10,4 +10,17 @@ func TestChangefile(t *testing.T) {
 	if err != nil {
 		t.Errorf("error ==> %s", err)
 	}
+
+	// 修改server.xml
+	serverXmlReplace := make(map[string]string)
+	serverXmlReplace["shutdownport"] = "8099"
+	serverXmlReplace["listeningport"] = "8009"
+	serverXmlReplace["ajpport"] = "8005"
+	serverXmlReplace["ajprirectport"] = "8443"
+	fc := "/tmp/apache-tomcat-7.0.75/conf/server.xml"
+	err = Changefile(fc, serverXmlReplace)
+	if err != nil {
+		t.Errorf("error ==> %s", err)
+	}
+
 }
