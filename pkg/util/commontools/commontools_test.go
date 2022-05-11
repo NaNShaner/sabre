@@ -44,7 +44,7 @@ func TestBasest_StartMiddleware(t *testing.T) {
 	var d *Basest
 	var timer time.Duration
 	startscript := "sleep 2; echo hello"
-	startMiddlewareReslut, err := d.StartMiddleware(startscript, timer*3)
+	startMiddlewareReslut, err := d.ExexCmdWithTimeOut(startscript, timer*3)
 	if err != nil {
 		t.Error(err)
 	}

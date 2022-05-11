@@ -22,4 +22,4 @@ spec:
       shutdownport: 8005
       ajprirectport: 8443
   deployaction:
-    action: "Install"
+    action: Install

@@ -13,7 +13,7 @@ type Config struct {
 	Server       string `json:"server"`
 	Metadata     `json:"metadata"`
 	Spec         `json:"spec"`
-	DeployAction `json:"action"`
+	DeployAction `json:"deployaction"`
 }
 
 // Metadata 存放中间件所属应用的信息

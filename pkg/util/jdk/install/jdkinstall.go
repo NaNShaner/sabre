@@ -12,6 +12,7 @@ import (
 )
 
 //JdkInstall 用户及用户组(判断||新建)-下载安装包-解压-修改配置文件-安装校验(尝试启动，并进行健康检查，通过后关闭)
+// 除去jdk的安装包， 还有应用使用的文件
 //TODO：信息上送网关并入库
 func JdkInstall(m *commontools.Basest) (bool, error) {
 
@@ -42,7 +43,7 @@ func JdkInstall(m *commontools.Basest) (bool, error) {
 
 	// 启动Tomcat
 	startUp := path.Join(m.Spec.InstallPath + "bin/start.sh")
-	startMiddleware, err := m.StartMiddleware(startUp, time.Duration(3))
+	startMiddleware, err := m.ExecCmdWithTimeOut(startUp, time.Duration(3))
 	if err != nil {
 		return false, err
 	}

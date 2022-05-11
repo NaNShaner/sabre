@@ -87,11 +87,11 @@ func (u *Basest) UnpackPkg(tarFileAbsPath string) error {
 
 }
 
-// StartMiddleware 中间件的启动
+// ExecCmdWithTimeOut 中间件的启动
 // startscript 为中间件的启动脚本的绝对路径
 // timer 为命令执行的超时时间
 // TODO 以不同用户执行命令，目前只能使用root
-func (u *Basest) StartMiddleware(startscript string, timer time.Duration) (string, error) {
+func (u *Basest) ExecCmdWithTimeOut(startscript string, timer time.Duration) (string, error) {
 	// 设置上下文超时时间，目前默认设置为3秒
 	if timer == 0 {
 		timer = 3
