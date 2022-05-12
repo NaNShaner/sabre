@@ -1,9 +1,7 @@
 
 ![](https://img.shields.io/badge/build-passing-green.svg)
 # Sabre (佩剑)
-以K8s的资源管理模式，管理非云上的资源。[项目wiki](https://github.com/NaNShaner/repoll/wiki)
-
-[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=NaNShaner)](https://github.com/anuraghazra/github-readme-stats)
+以K8s的资源管理模式，管理非云上的资源。
 
 ## 项目简介
 ### 主要功能（当前功能）
