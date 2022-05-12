@@ -16,19 +16,19 @@ import (
 //TODO：信息上送网关并入库
 //TODO：ajp port 暂不支持修改
 //TODO：shutdown port 暂不支持修改
-func TomcatInstall(m *commontools.Basest) (bool, error) {
+func TomcatInstall(m *commontools.Basest) (string, error) {
 	if m.DeployAction.Action != "Install" {
-		return false, fmt.Errorf("yaml文件为声明Tomcat的安装行为\n")
+		return "", fmt.Errorf("yaml文件为声明Tomcat的安装行为\n")
 	}
-
-	if err := m.InstallCommonStep(); err != nil {
-		return false, fmt.Errorf("TomcatInstall 步骤执行失败，%s", err)
+	unPackPath, err := m.InstallCommonStep()
+	if err != nil {
+		return "", fmt.Errorf("TomcatInstall 步骤执行失败，%s", err)
 	}
 
 	// 如果用户未输入Tomcat的jvm参数，设置默认参数，默认参数来自/root/.sabrefig/config
 	defaultCf, defaultCfErr := yamlfmt.YamlFmt(config.GetConfigSet(), sabstruct.Config{})
 	if defaultCfErr != nil {
-		return false, fmt.Errorf("获取服务器默认配置失败,%s", defaultCfErr)
+		return "", fmt.Errorf("获取服务器默认配置失败,%s", defaultCfErr)
 	}
 	// 这里判断用户是否输入了jvm参数
 	// TODO 后续在validator中添加校验，该字段必填
@@ -39,30 +39,30 @@ func TomcatInstall(m *commontools.Basest) (bool, error) {
 	// 获取Tomcat家目录
 	tomcatHomePath, err := GetTomcatHomePath(m)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
 	//修改catalina.sh
 	ChangeCatalinaShErr := ChangeCatalinaSh(m, tomcatHomePath, "/bin/catalina.sh")
 	if ChangeCatalinaShErr != nil {
-		return false, ChangeCatalinaShErr
+		return "", ChangeCatalinaShErr
 	}
 
 	// 修改server.xml
 	ChangeServerXmlErr := ChangeServerXml(m, tomcatHomePath, "/conf/server.xml")
 	if ChangeServerXmlErr != nil {
-		return false, ChangeServerXmlErr
+		return "", ChangeServerXmlErr
 	}
 
 	// 启动Tomcat
 	startUp := path.Join(m.Spec.InstallPath + "/apache-tomcat-7.0.75/bin/startup.sh")
 	startMiddleware, err := m.ExecCmdWithTimeOut(startUp, time.Duration(3))
 	if err != nil {
-		return false, err
+		return "", err
 	}
 	fmt.Printf("命令执行情况%s", startMiddleware)
 
-	return true, nil
+	return unPackPath, nil
 }
 
 // GetTomcatHomePath 获取Tomcat安装目录

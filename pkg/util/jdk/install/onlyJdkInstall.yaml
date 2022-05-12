@@ -1,0 +1,27 @@
+apiversion: apps/v1
+kind: Deployment
+metadata:
+  namespace: MNPP
+  netarea: app
+  appname: entry
+spec:
+  pkgdownloadpath: "http://124.71.219.53:8001/uploads/uploads/2022/05/07/apache-tomcat-7.0.75.tar.gz"
+  midtype: jdk
+  version: 1.1.1
+  port: 8099
+  installpath: /usr/local/java
+  user:
+    name: bijingrui
+    group: staff
+  defaultconfig:
+    jdk:
+      javaopts: -server -Xms1024M -Xmx1024M -Xss512k -XX:PermSize=1024M -XX:MaxPermSize=1024M -XX:+DisableExplicitGC -XX:MaxTenuringThreshold=31 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+CMSParallelRemarkEnabled -XX:+UseCMSCompactAtFullCollection -XX:LargePageSizeInBytes=128m -XX:+UseFastAccessorMethods -XX:+UseCMSInitiatingOccupancyOnly -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintHeapAtGC -XX:+HeapDumpOnOutOfMemoryError -XX:+HeapDumpOnCtrlBreak -Djava.awt.headless=true
+      appinstallpath: /u01/app
+      startup: "http://124.71.219.53:8001/uploads/uploads/2022/05/12/startup.sh"
+    tomcat:
+      listeningport: 8099
+      ajpport: 8009
+      shutdownport: 8005
+      ajprirectport: 8443
+  deployaction:
+    action: Install

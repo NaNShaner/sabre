@@ -9,11 +9,14 @@ import (
 	"sabre/pkg/util/aboutuser"
 )
 
-// GetConfigSet /root/.sabrefig/config
+// GetConfigSet ~/.sabrefig/config
 // defult JAVA_OPTS="-server -Xms1024M -Xmx1024M -Xss512k"
 func GetConfigSet() string {
-	u := user.User{Username: "root"}
-	rootDir, err := aboutuser.GetUserHomeDir(u)
+	currentUser, err := user.Current()
+	if err != nil {
+		return ""
+	}
+	rootDir, err := aboutuser.GetUserHomeDir(currentUser.Username)
 	if err != nil {
 		return ""
 	}

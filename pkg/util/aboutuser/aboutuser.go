@@ -47,8 +47,8 @@ func IsUserGroupExist(uname user.User) (bool, error) {
 }
 
 // GetUserHomeDir 获取当前用户的家目录
-func GetUserHomeDir(uname user.User) (string, error) {
-	userExist, err := UserInfo(uname)
+func GetUserHomeDir(uname string) (string, error) {
+	userExist, err := user.Lookup(uname)
 	if err != nil {
 		return "", nil
 	}

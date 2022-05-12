@@ -87,20 +87,27 @@ func Changefile(f string, r ...map[string]string) error {
 	}
 
 	for _, s := range filePerLine {
+		_, writeFileErr := out.WriteString(s + "\n")
+		if err != nil {
+			return fmt.Errorf("写%s文件失败: %s", f, writeFileErr)
+		}
+		//fmt.Printf("最终文本内容%q\n", s)
+	}
+	return nil
+}
 
+//AppendFile 在文件末尾追加文件
+func AppendFile(f string, r []string) error {
+	out, openFileErr := os.OpenFile(f, os.O_RDWR|os.O_APPEND, 0766)
+	if openFileErr != nil {
+		return fmt.Errorf("打开%s文件失败: %s", f, openFileErr)
+	}
+	defer out.Close()
+	for _, s := range r {
 		_, err := out.WriteString(s + "\n")
 		if err != nil {
 			return fmt.Errorf("写%s文件失败: %s", f, err)
 		}
-		fmt.Printf("最终文本内容%q\n", s)
 	}
-
-	//for _, s := range filePerLine {
-	//	_, err = out.WriteString(s + "\n")
-	//	if err != nil {
-	//		return fmt.Errorf("写%s文件失败: %s", f, err)
-	//	}
-	//}
 	return nil
-
 }

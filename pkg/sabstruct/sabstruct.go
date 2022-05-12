@@ -8,12 +8,11 @@ import (
 // Kind 资源类型 中间件、网络、基础设施
 //	Deployment:资源类型	config:配置文件
 type Config struct {
-	ApiVersion   string `json:"apiVersion"`
-	Kind         string `json:"kind"`
-	Server       string `json:"server"`
-	Metadata     `json:"metadata"`
-	Spec         `json:"spec"`
-	DeployAction `json:"deployaction"`
+	ApiVersion string `json:"apiVersion"`
+	Kind       string `json:"kind"`
+	Server     string `json:"server"`
+	Metadata   `json:"metadata"`
+	Spec       `json:"spec"`
 }
 
 // Metadata 存放中间件所属应用的信息
@@ -34,6 +33,7 @@ type Spec struct {
 	MidRunType      []string `json:"run_type,omitempty"` // 运行模式，集群、主备、冷备等等
 	User            `json:"user"`
 	DefaultConfig   `json:"default,omitempty"`
+	DeployAction    `json:"deployaction"`
 }
 
 // User 中间件所属用户信息
@@ -43,6 +43,8 @@ type User struct {
 }
 
 // DeployAction 执行动作
+// Action，针对Tomcat 包含Install
+// Action，针对Jdk 包含Install，appInstall。含义是Install仅安装jdk并配置环境变量、 appInstall表示安装jdk、配置变量并且生成启动jar包的文件目录以及启动脚本
 type DeployAction struct {
 	Timer  time.Time `json:"timer,omitempty"` // 执行时间
 	Action string    `json:"action"`
@@ -57,7 +59,9 @@ type DeployAction struct {
 
 // Jdk 在~/.sabrefig/config 文件的默认配置
 type Jdk struct {
-	Javaopts string `json:"javaopts"`
+	Javaopts          string `json:"javaopts"`
+	JdkAppInstallPath string `json:"appinstallpath"`
+	JdkStartUpFile    string `json:"startup"`
 }
 
 // Tomcat 在.sabrefig/config 文件的默认配置

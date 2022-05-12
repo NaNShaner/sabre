@@ -25,9 +25,8 @@ type Basest sabstruct.Config
 
 // GetDeployPkgFromUrl 从服务端获取安装包或者配置文件等
 // 返回下载文件的绝对路径
-func (u *Basest) GetDeployPkgFromUrl() (string, error) {
+func (u *Basest) GetDeployPkgFromUrl(pkgUrl string) (string, error) {
 	pkgPath := PkgLocalPathForLinux
-	pkgUrl := u.Spec.PKGDownloadPath
 	fileName := path.Base(pkgUrl)
 	pkgBasPath := pkgPath + fileName
 	res, err := http.Get(pkgUrl)
@@ -65,25 +64,25 @@ func (u *Basest) GetDeployPkgFromUrl() (string, error) {
 }
 
 // UnpackPkg 解压下载的.tar.gz 文件包
-// tarFileAbsPath参数为tar包的在服务器上的绝对路径
-func (u *Basest) UnpackPkg(tarFileAbsPath string) error {
+// tarFileAbsPath参数为tar包的在服务器上的绝对路径，函数返回解压后文件的绝对路径
+func (u *Basest) UnpackPkg(tarFileAbsPath string) (string, error) {
 	// tar包的文件名称
 	tarFileName := path.Base(tarFileAbsPath)
 
 	// 解压目录下如已有同名文件，则报错
 	if !IsFileExist(path.Join(u.Spec.InstallPath, tarFileName)) {
-		return fmt.Errorf("failed to Unpack tar file: the file is already exist\n")
+		return "", fmt.Errorf("failed to Unpack tar file: the file is already exist\n")
 	}
 	tarFile, err := os.Open(tarFileAbsPath)
 	defer tarFile.Close()
 	if err != nil {
-		return fmt.Errorf("failed to open tar file: %v\n", err)
+		return "", fmt.Errorf("failed to open tar file: %v\n", err)
 	}
-	_, err = unpackit.Unpack(tarFile, u.Spec.InstallPath)
-	if err != nil {
-		return fmt.Errorf("failed to Unpack tar file: %v\n", err)
+	unPackPkgAbsPath, unPackPkgAbsPathErr := unpackit.Unpack(tarFile, u.Spec.InstallPath)
+	if unPackPkgAbsPathErr != nil {
+		return "", fmt.Errorf("failed to Unpack tar file: %v\n", err)
 	}
-	return nil
+	return unPackPkgAbsPath, nil
 
 }
 
@@ -107,6 +106,8 @@ func (u *Basest) ExecCmdWithTimeOut(startscript string, timer time.Duration) (st
 }
 
 // IsFileExist 判断文件本地是否已经存在
+// 存在为false
+// 不存在true
 func IsFileExist(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
@@ -116,28 +117,29 @@ func IsFileExist(filename string) bool {
 	return false
 }
 
-func (u *Basest) InstallCommonStep() error {
+//InstallCommonStep 包含检查用户、下载安装包、解压等公共步骤
+func (u *Basest) InstallCommonStep() (string, error) {
 
 	// 判断用户在服务器上是否存在，函数返回为bool值
 	isUserExist, userExistErr := aboutuser.IsUserExist(u.User.Name)
 	if userExistErr != nil {
-		return fmt.Errorf("用户%s不存在，%s\n", u.User.Name, userExistErr)
+		return "", fmt.Errorf("用户%s不存在，%s\n", u.User.Name, userExistErr)
 	}
 	// 如果用户存在
 	fmt.Printf("isUserExist: %v\n", isUserExist)
 	if isUserExist {
-		getPkgFromUrl, getPkgFromUrlErr := u.GetDeployPkgFromUrl()
+		getPkgFromUrl, getPkgFromUrlErr := u.GetDeployPkgFromUrl(u.Spec.PKGDownloadPath)
 		if getPkgFromUrlErr != nil {
-			return fmt.Errorf("下载%s文件失败，%s\n", u.Spec.PKGDownloadPath, getPkgFromUrlErr)
+			return "", fmt.Errorf("下载%s文件失败，%s\n", u.Spec.PKGDownloadPath, getPkgFromUrlErr)
 		}
 		// 解压安装包，解压到 m.Spec.InstallPath 路径下
-		unpackPkgErr := u.UnpackPkg(getPkgFromUrl)
+		unPackPkg, unpackPkgErr := u.UnpackPkg(getPkgFromUrl)
 		if unpackPkgErr != nil {
-			return fmt.Errorf("解压%s文件失败，%s\n", getPkgFromUrl, unpackPkgErr)
+			return "", fmt.Errorf("解压%s文件失败，%s\n", getPkgFromUrl, unpackPkgErr)
 		}
+		return unPackPkg, nil
 	} else {
 		// 如果用户不存在
-		return fmt.Errorf("用户%s不存在\n", u.User.Name)
+		return "", fmt.Errorf("用户%s不存在\n", u.User.Name)
 	}
-	return nil
 }
