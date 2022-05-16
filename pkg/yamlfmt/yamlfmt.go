@@ -7,6 +7,7 @@ package yamlfmt
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
@@ -31,6 +32,7 @@ import (
 
 // YamlFmt 解析yaml文件为json。f为yaml文件的绝对路径，s为解析的结构体
 func YamlFmt(f string, s sabstruct.Config) (*sabstruct.Config, error) {
+	validate := validator.New()
 	//从外部的conf.yaml文件读取数据
 	data, readErr := ioutil.ReadFile(f)
 	if readErr != nil {
@@ -47,6 +49,14 @@ func YamlFmt(f string, s sabstruct.Config) (*sabstruct.Config, error) {
 	//if err != nil {
 	//	return nil, err
 	//}
+
+	// 对于yaml文件进行校验
+	validateErr := validate.Struct(&s)
+	if validateErr != nil {
+		for _, fieldErr := range validateErr.(validator.ValidationErrors) {
+			fmt.Println(fieldErr) //Key: 'Users.Passwd' Error:Field validation for 'Passwd' failed on the 'min' tag
+		}
+	}
 	return &s, err
 }
 

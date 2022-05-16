@@ -12,15 +12,6 @@ import (
 )
 
 func main() {
-	//	解析命令行的如参数
-	// sabrectl create tomcat -f tomcat.yaml
-	// action := flag.String("create", "", "部署类型")
-	//installPkgPath := flag.String("lp", installPkgPath, "安装文件")
-	//installLocalPath := flag.String("lp", installLocalPath, "安装路径")
-	//mdUser := flag.String("lp", mdUser, "启动用户")
-	//mdUserGroup := flag.String("lp", mdUserGroup, "启动用户组")
-	//flag.Parse()
-	//fmt.Println()
 
 	var cmdCreate = &cobra.Command{
 		Use:     "create [install or deploy middleware resources]",

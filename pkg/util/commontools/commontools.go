@@ -143,3 +143,12 @@ func (u *Basest) InstallCommonStep() (string, error) {
 		return "", fmt.Errorf("用户%s不存在\n", u.User.Name)
 	}
 }
+
+//GetLocalServerName 获取本机主机名
+func GetLocalServerName() (string, error) {
+	serverName, err := os.Hostname()
+	if err != nil {
+		return "", err
+	}
+	return serverName, nil
+}

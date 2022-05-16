@@ -8,9 +8,11 @@ import (
 // Kind 资源类型 中间件、网络、基础设施
 //	Deployment:资源类型	config:配置文件
 type Config struct {
-	ApiVersion string `json:"apiVersion"`
-	Kind       string `json:"kind"`
+	// validate 必填字段
+	ApiVersion string `json:"apiVersion" validate:"required"`
+	Kind       string `json:"kind" validate:"required"`
 	Server     string `json:"server"`
+	ApiServer  string `json:"apiserver"`
 	Metadata   `json:"metadata"`
 	Spec       `json:"spec"`
 }
@@ -77,4 +79,9 @@ type Tomcat struct {
 type DefaultConfig struct {
 	Jdk    `json:"jdk"`
 	Tomcat `json:"tomcat"`
+}
+
+//IsZero 校验必填字段
+func (n *Config) IsZero() bool {
+	return n.Kind == "" && n.ApiVersion == "" && n.Metadata == Metadata{}
 }

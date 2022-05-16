@@ -62,6 +62,12 @@ func TomcatInstall(m *commontools.Basest) (string, error) {
 	}
 	fmt.Printf("命令执行情况%s", startMiddleware)
 
+	// 请求API网关，信息入库
+	_, reqErr := m.HttpReq()
+	if reqErr != nil {
+		return "", reqErr
+	}
+
 	return unPackPath, nil
 }
 

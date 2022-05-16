@@ -1,10 +1,11 @@
 # 资源类型，定义etcd中的前缀
-格式：prefix + "/" + 资源类型 + "/" + namespace + "/" + 具体资源名
+格式：prefix + "/" + namespace + "/" + 资源类型 `[+ 资源提供方式]` `[+ 工程名称]`
 
 ## 资源类型及相关说明
-### 资源类型，表示当前资源的分类属性
-| 资源类型| 简称|
---------|------|
+### prefix 资源前缀
+| 前缀类型| 简称
+--------|------
+|系统|default|
 |中间件|mid|
 |网络资源|net|
 |存储资源|storage|
@@ -14,7 +15,23 @@
 例如：ERP
 
 ### 资源名称，表示当前资源的种类名称
-例如：Tomcat
+例如：
+- 中间件资源：Tomcat、NGINX
+- 缓存资源：Redis
+- 数据资源：Mysql、PG
+- 网络资源：F5、DNS
+- 存储资源：Nas、oss
+
+### 资源提供方式，可选
+例如：
+- 基于sabre提供的云下资源
+- 公司内PaaS平台通过接口的方式给提供
+  - 中间件管理平台，提供资源的部署能力
+  - 软负载平台，提供的负载能力
+- 基于K8s提供资源
+
+### 工程名称，可选
+例如：demo
 
 
 
@@ -27,7 +44,7 @@ MNPP
 
 
 ### 例如：获取erp系统的下的demo工程部署在哪些机器的Tomcat中
-key :/registry/deployments/ERP/Tomcat/{projectName}/{hostname/ipaddr}
+key :/mid/ERP/Tomcat/{projectName}/{hostname/ipaddr}
 ```shell
 sabrectl get tomcat demo
 ```
