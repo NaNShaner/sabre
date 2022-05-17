@@ -23,6 +23,14 @@ const (
 // Basest 分支结构，继承顶层结构 sabstruct.Config
 type Basest sabstruct.Config
 
+type InstallComm interface {
+	GetDeployPkgFromUrl(pkgUrl string) (string, error)
+	UnpackPkg(tarFileAbsPath string) (string, error)
+	ExecCmdWithTimeOut(startscript string, timer time.Duration) (string, error)
+	InstallCommonStep() (string, error)
+	//SetInfoToDB() (*http.Request, error)
+}
+
 // GetDeployPkgFromUrl 从服务端获取安装包或者配置文件等
 // 返回下载文件的绝对路径
 func (u *Basest) GetDeployPkgFromUrl(pkgUrl string) (string, error) {
@@ -105,21 +113,8 @@ func (u *Basest) ExecCmdWithTimeOut(startscript string, timer time.Duration) (st
 	return string(output), nil
 }
 
-// IsFileExist 判断文件本地是否已经存在
-// 存在为false
-// 不存在true
-func IsFileExist(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return true
-	}
-	fmt.Printf("文件 %s 已存在， %v\n", info.Name(), err)
-	return false
-}
-
 //InstallCommonStep 包含检查用户、下载安装包、解压等公共步骤
 func (u *Basest) InstallCommonStep() (string, error) {
-
 	// 判断用户在服务器上是否存在，函数返回为bool值
 	isUserExist, userExistErr := aboutuser.IsUserExist(u.User.Name)
 	if userExistErr != nil {
@@ -144,6 +139,15 @@ func (u *Basest) InstallCommonStep() (string, error) {
 	}
 }
 
+////SetInfoToDB 请求API网关，信息入库
+//func (u *Basest) SetInfoToDB() (*http.Request, error) {
+//	req, reqErr := u.HttpReq()
+//	if reqErr != nil {
+//		return nil, reqErr
+//	}
+//	return req, nil
+//}
+
 //GetLocalServerName 获取本机主机名
 func GetLocalServerName() (string, error) {
 	serverName, err := os.Hostname()
@@ -151,4 +155,16 @@ func GetLocalServerName() (string, error) {
 		return "", err
 	}
 	return serverName, nil
+}
+
+// IsFileExist 判断文件本地是否已经存在
+// 存在为false
+// 不存在true
+func IsFileExist(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return true
+	}
+	fmt.Printf("文件 %s 已存在， %v\n", info.Name(), err)
+	return false
 }

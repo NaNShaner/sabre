@@ -5,10 +5,8 @@ import (
 	"io/ioutil"
 	"path"
 	"sabre/pkg/config"
-	"sabre/pkg/sabstruct"
 	"sabre/pkg/util/changefile"
 	"sabre/pkg/util/commontools"
-	"sabre/pkg/yamlfmt"
 	"time"
 )
 
@@ -26,12 +24,11 @@ func TomcatInstall(m *commontools.Basest) (string, error) {
 	}
 
 	// 如果用户未输入Tomcat的jvm参数，设置默认参数，默认参数来自/root/.sabrefig/config
-	defaultCf, defaultCfErr := yamlfmt.YamlFmt(config.GetConfigSet(), sabstruct.Config{})
+	defaultCf, defaultCfErr := config.GetConfigSet()
 	if defaultCfErr != nil {
 		return "", fmt.Errorf("获取服务器默认配置失败,%s", defaultCfErr)
 	}
-	// 这里判断用户是否输入了jvm参数
-	// TODO 后续在validator中添加校验，该字段必填
+	// 这里判断用户是否输入了jvm参数，如果用户没有输入，可以通过默认配置填充
 	if m.Spec.DefaultConfig.Jdk.Javaopts == "" {
 		m.Spec.DefaultConfig.Jdk.Javaopts = defaultCf.Spec.Jdk.Javaopts
 	}
@@ -55,6 +52,7 @@ func TomcatInstall(m *commontools.Basest) (string, error) {
 	}
 
 	// 启动Tomcat
+	// TODO 解决 apache-tomcat-7.0.75 目录硬编码问题
 	startUp := path.Join(m.Spec.InstallPath + "/apache-tomcat-7.0.75/bin/startup.sh")
 	startMiddleware, err := m.ExecCmdWithTimeOut(startUp, time.Duration(3))
 	if err != nil {
@@ -62,12 +60,12 @@ func TomcatInstall(m *commontools.Basest) (string, error) {
 	}
 	fmt.Printf("命令执行情况%s", startMiddleware)
 
-	// 请求API网关，信息入库
-	_, reqErr := m.HttpReq()
-	if reqErr != nil {
-		return "", reqErr
+	// 入库
+	setInfoToDB, setInfoToDBErr := m.SetInfoToDB()
+	if setInfoToDBErr != nil {
+		return "", setInfoToDBErr
 	}
-
+	fmt.Printf("入库成功 ===> %+v\n", setInfoToDB)
 	return unPackPath, nil
 }
 

@@ -34,13 +34,16 @@
 例如：demo
 
 
-
 ## 事例
 ### 例如：当前机器的namespace
 key :/midRegx/namespace/{hostname/ipaddr}
+```shell
 sabrectl get namespace
+```
 输出：
-MNPP
+```shell
+ERP
+```
 
 
 ### 例如：获取erp系统的下的demo工程部署在哪些机器的Tomcat中

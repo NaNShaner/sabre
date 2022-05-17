@@ -4,15 +4,24 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"sabre/pkg/util/commontools"
+	"sabre/pkg/config"
+	"sabre/pkg/sabstruct"
 	"strings"
 )
 
-type Basest commontools.Basest
+type Basest sabstruct.Config
 
-type apiserver struct {
-	//ResType 资源类型，定义etcd中的前缀
-	ResType string
+//ApiServer 字段类型及定义，请见https://github.com/NaNShaner/sabre/blob/master/pkg/dbload/ResType.md
+type ApiServer struct {
+	Prefix string `json:"prefix"`
+	//ResType 资源类型
+	ResType string `json:"res_type"`
+	//NameSpace 系统简称
+	NameSpace string `json:"namespace"`
+	//Provider 资源提供方
+	Provider string `json:"provider,omitempty"`
+	//ProjectNmae 应用工程名称
+	ProjectName string `json:"projectname,omitempty"`
 }
 
 const (
@@ -47,6 +56,7 @@ func (u *Basest) RegxEtcdKey() string {
 }
 
 //RegxEtcValue 继续入库的value
+//TODO 格式化value
 func (u *Basest) RegxEtcValue() Basest {
 	return *u
 }
@@ -54,7 +64,10 @@ func (u *Basest) RegxEtcValue() Basest {
 //HttpReq 与API网关交互
 func (u *Basest) HttpReq() (*http.Request, error) {
 
-	apiServer := "http://localhost:8081/into/set"
+	apiServer, apiServerErr := config.GetApiServerUrl()
+	if apiServerErr != nil {
+		return nil, apiServerErr
+	}
 
 	etcdKey := u.RegxEtcdKey()
 	etcdValue := u.RegxEtcValue()
