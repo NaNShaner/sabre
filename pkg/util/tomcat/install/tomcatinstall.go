@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
+	"sabre/pkg/apiserver"
 	"sabre/pkg/config"
 	"sabre/pkg/util/changefile"
 	"sabre/pkg/util/commontools"
@@ -34,26 +35,25 @@ func TomcatInstall(m *commontools.Basest) (string, error) {
 	}
 
 	// 获取Tomcat家目录
-	tomcatHomePath, err := GetTomcatHomePath(m)
+	_, err = GetTomcatHomePath(m)
 	if err != nil {
 		return "", err
 	}
-
+	fmt.Printf("==> 安装目录%s\n", unPackPath)
 	//修改catalina.sh
-	ChangeCatalinaShErr := ChangeCatalinaSh(m, tomcatHomePath, "/bin/catalina.sh")
+	ChangeCatalinaShErr := ChangeCatalinaSh(m, unPackPath, "/bin/catalina.sh")
 	if ChangeCatalinaShErr != nil {
 		return "", ChangeCatalinaShErr
 	}
 
 	// 修改server.xml
-	ChangeServerXmlErr := ChangeServerXml(m, tomcatHomePath, "/conf/server.xml")
+	ChangeServerXmlErr := ChangeServerXml(m, unPackPath, "/conf/server.xml")
 	if ChangeServerXmlErr != nil {
 		return "", ChangeServerXmlErr
 	}
 
 	// 启动Tomcat
-	// TODO 解决 apache-tomcat-7.0.75 目录硬编码问题
-	startUp := path.Join(m.Spec.InstallPath + "/apache-tomcat-7.0.75/bin/startup.sh")
+	startUp := path.Join(unPackPath + "/bin/startup.sh")
 	startMiddleware, err := m.ExecCmdWithTimeOut(startUp, time.Duration(3))
 	if err != nil {
 		return "", err
@@ -61,7 +61,7 @@ func TomcatInstall(m *commontools.Basest) (string, error) {
 	fmt.Printf("命令执行情况%s", startMiddleware)
 
 	// 入库
-	setInfoToDB, setInfoToDBErr := m.SetInfoToDB()
+	setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(m))
 	if setInfoToDBErr != nil {
 		return "", setInfoToDBErr
 	}
@@ -71,21 +71,24 @@ func TomcatInstall(m *commontools.Basest) (string, error) {
 
 // GetTomcatHomePath 获取Tomcat安装目录
 func GetTomcatHomePath(m *commontools.Basest) (string, error) {
-	InstallHomePath, getInstallHomePatherr := ioutil.ReadDir(m.Spec.InstallPath)
-	if getInstallHomePatherr != nil {
-		return "", getInstallHomePatherr
+	InstallHomePath, getInstallHomePathErr := ioutil.ReadDir(m.Spec.InstallPath)
+
+	if getInstallHomePathErr != nil {
+		return "", getInstallHomePathErr
 	}
 	if len(InstallHomePath) != 1 {
-		return "", fmt.Errorf("%s 目录下含多层目录，无法执行操作，请检查", m.Spec.InstallPath)
+		return "", fmt.Errorf("%s 目录下含多层目录，无法执行操作，请检查\n", m.Spec.InstallPath)
 	}
 	for _, p := range InstallHomePath {
 		if p.IsDir() {
+			commontools.Log.Info(p.Name())
+			fmt.Printf("GetTomcatHomePath 目录文件%s\n", p.Name())
 			return p.Name(), nil
 		} else {
-			return "", fmt.Errorf("%s 目录下无目录文件", m.Spec.InstallPath)
+			return "", fmt.Errorf("%s 目录下无目录文件\n", m.Spec.InstallPath)
 		}
 	}
-	return "", fmt.Errorf("无法获取Tomcat的家目录，请检查")
+	return "", fmt.Errorf("无法获取Tomcat的家目录，请检查\n")
 }
 
 //ChangeCatalinaSh  修改catalina.sh配置文件添加jvm参数
@@ -96,7 +99,7 @@ func ChangeCatalinaSh(m *commontools.Basest, p, file string) error {
 	catalina := p + file
 	catalinaReplaceErr := changefile.Changefile(catalina, catalinaReplace)
 	if catalinaReplaceErr != nil {
-		return catalinaReplaceErr
+		return fmt.Errorf("修改配置文件%s失败,%s\n", catalina, catalinaReplaceErr)
 	}
 	return nil
 }
@@ -108,7 +111,7 @@ func ChangeServerXml(m *commontools.Basest, p, file string) error {
 	serverXml := p + file
 	serverXmlReplaceErr := changefile.Changefile(serverXml, serverXmlReplace)
 	if serverXmlReplaceErr != nil {
-		return fmt.Errorf("修改配置文件%s失败,%s", serverXml, serverXmlReplaceErr)
+		return fmt.Errorf("修改配置文件%s失败,%s\n", serverXml, serverXmlReplaceErr)
 	}
 	return nil
 }

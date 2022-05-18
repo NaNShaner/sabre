@@ -121,12 +121,14 @@ func (u *Basest) InstallCommonStep() (string, error) {
 		return "", fmt.Errorf("用户%s不存在，%s\n", u.User.Name, userExistErr)
 	}
 	// 如果用户存在
-	fmt.Printf("isUserExist: %v\n", isUserExist)
 	if isUserExist {
 		getPkgFromUrl, getPkgFromUrlErr := u.GetDeployPkgFromUrl(u.Spec.PKGDownloadPath)
 		if getPkgFromUrlErr != nil {
 			return "", fmt.Errorf("下载%s文件失败，%s\n", u.Spec.PKGDownloadPath, getPkgFromUrlErr)
 		}
+
+		//getPkgFromUrl := "/tmp/jdk-8u171-linux-x64.tar.gz"
+
 		// 解压安装包，解压到 m.Spec.InstallPath 路径下
 		unPackPkg, unpackPkgErr := u.UnpackPkg(getPkgFromUrl)
 		if unpackPkgErr != nil {

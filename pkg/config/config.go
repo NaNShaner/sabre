@@ -7,6 +7,7 @@ package config
 import (
 	"fmt"
 	"os/user"
+	"path"
 	"sabre/pkg/sabstruct"
 	"sabre/pkg/util/aboutuser"
 	"sabre/pkg/util/commontools"
@@ -24,18 +25,19 @@ func GetConfigSet() (*sabstruct.Config, error) {
 	if getUserHomeDirErr != nil {
 		return &sabstruct.Config{}, getUserHomeDirErr
 	}
-	configPaht := ".sabrefig"
-	configFile := "config"
+	configPath := "/.sabrefig"
+	configFile := "/config"
 
-	sabreConfigFile := rootDir + configPaht + configFile
+	sabreConfigFile := path.Join(rootDir + configPath + configFile)
 	if commontools.IsFileExist(sabreConfigFile) {
-		return &sabstruct.Config{}, fmt.Errorf("用户%s的家目录下，无sabre的配置文件", currentUser.Username)
+		return &sabstruct.Config{}, fmt.Errorf("用户%s的家目录%s下，无sabre的配置文件\n",
+			currentUser.Username, sabreConfigFile)
 	}
 	var s sabstruct.Config
 
 	yamlFmt, yamlFmtErr := yamlfmt.YamlFmt(sabreConfigFile, s)
 	if yamlFmtErr != nil {
-		return &sabstruct.Config{}, fmt.Errorf("sabre 配置文件解析失败, %s", yamlFmtErr)
+		return &sabstruct.Config{}, fmt.Errorf("sabre 配置文件解析失败, %s\n", yamlFmtErr)
 	}
 	return yamlFmt, nil
 }

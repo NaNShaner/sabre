@@ -7,6 +7,7 @@ import (
 	"os"
 	"sabre/pkg/sabstruct"
 	"sabre/pkg/util/commontools"
+	Ji "sabre/pkg/util/jdk/install"
 	Ti "sabre/pkg/util/tomcat/install"
 	"sabre/pkg/yamlfmt"
 )
@@ -80,12 +81,13 @@ func main() {
 				fmt.Printf("%s\n", printResultJson)
 
 				// 执行安装操作
-				tomcatInstallPath, tomcatInstallPathErr := Ti.TomcatInstall((*commontools.Basest)(yamlFmt))
-				if tomcatInstallPathErr != nil {
+				jdkInstall := Ji.JdkInstall{}
+				jdkInstallPathErr := jdkInstall.JdkInstallForApp((*commontools.Basest)(yamlFmt))
+				if jdkInstallPathErr != nil {
 					fmt.Printf("%s\n", err)
 					os.Exit(-1)
 				}
-				fmt.Printf("tomcat deployed to %s\n", tomcatInstallPath)
+				fmt.Printf("jdk deployed to %s\n", jdkInstallPathErr)
 			}
 		},
 		// 命令执行前进行判断，类似django的post_save

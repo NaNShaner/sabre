@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -62,8 +63,11 @@ func main() {
 	http.HandleFunc("/midRegx/show", ShowInfoFromDB)
 	//r := NewRouter()
 	//r.Use(logger)
-	err := http.ListenAndServe(":8081", nil)
+	listenPort := "8081"
+	fmt.Printf("api server监听端口为 %s\n", listenPort)
+	err := http.ListenAndServe(":"+listenPort, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }

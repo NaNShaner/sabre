@@ -2,6 +2,7 @@ package apiserver
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sabre/pkg/config"
@@ -62,7 +63,7 @@ func (u *Basest) RegxEtcValue() Basest {
 }
 
 //HttpReq 与API网关交互
-func (u *Basest) HttpReq() (*http.Request, error) {
+func HttpReq(u *Basest) (*http.Request, error) {
 
 	apiServer, apiServerErr := config.GetApiServerUrl()
 	if apiServerErr != nil {
@@ -71,12 +72,13 @@ func (u *Basest) HttpReq() (*http.Request, error) {
 
 	etcdKey := u.RegxEtcdKey()
 	etcdValue := u.RegxEtcValue()
+	fmt.Printf("HttpReq ==> k:%s \n v:+%v\n", etcdKey, etcdValue)
 	insertDB := make(map[string]Basest)
 	insertDB[etcdKey] = etcdValue
-
+	apiUrl := apiServer + "/midRegx/set"
 	bt, err := json.Marshal(insertDB)
 	body := ioutil.NopCloser(strings.NewReader(string(bt)))
-	req, err := http.NewRequest("POST", apiServer, body)
+	req, err := http.NewRequest("POST", apiUrl, body)
 	if err != nil {
 		return nil, err
 	}
