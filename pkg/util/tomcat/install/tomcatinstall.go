@@ -65,8 +65,9 @@ func TomcatInstall(m *commontools.Basest) (string, error) {
 	if setInfoToDBErr != nil {
 		return "", setInfoToDBErr
 	}
-	fmt.Printf("入库成功 ===> %+v\n", setInfoToDB)
-	return unPackPath, nil
+	fmt.Printf("入库成功 ===> %s\n", setInfoToDB)
+	return "入库成功", nil
+	//return unPackPath, nil
 }
 
 // GetTomcatHomePath 获取Tomcat安装目录

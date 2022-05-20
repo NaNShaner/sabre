@@ -32,7 +32,7 @@ func IsUserExist(uname string) (bool, error) {
 	if err != nil {
 		return false, nil
 	}
-	fmt.Printf("%+v", *lookup)
+	fmt.Printf("用户信息检查通过，%+v\n", *lookup)
 	return true, nil
 }
 

@@ -7,7 +7,7 @@ import (
 )
 
 func TestSetIntoDB(t *testing.T) {
-	k := "MNPP"
+	k := "/mid/MNPP"
 	f := "/Users/bijingrui/sabre/pkg/yamlfmt/sabrelet.yaml"
 	var Configs sabstruct.Config
 	yamlFmt, err := yamlfmt.YamlFmt(f, Configs)
@@ -15,7 +15,13 @@ func TestSetIntoDB(t *testing.T) {
 		t.Error(err)
 	}
 
-	SetIntoDBErr := SetIntoDB(k, yamlFmt)
+	resultJson, err := yamlfmt.PrintResultJson(yamlFmt)
+	if err != nil {
+		return
+	}
+
+	SetIntoDBErr := SetIntoDB(k, string(resultJson))
+
 	if SetIntoDBErr != nil {
 		t.Errorf("==> %s", SetIntoDBErr)
 		return

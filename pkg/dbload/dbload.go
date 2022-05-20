@@ -34,9 +34,12 @@ import (
 	"time"
 )
 
-func SetIntoDB(k string, v interface{}) error {
+//SetIntoDB 入库
+//TODO： apiserver的地址硬编码
+func SetIntoDB(k, v string) error {
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"124.71.219.53:3380"},
+		//Endpoints:   []string{"124.71.219.53:2379"},
+		Endpoints:   []string{"127.0.0.1:2379"},
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
@@ -45,18 +48,18 @@ func SetIntoDB(k string, v interface{}) error {
 	defer cli.Close()
 
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(30))
-	resp, err := cli.Put(context.TODO(), "name", "sabre")
+	resp, err := cli.Put(context.TODO(), k, v)
 
 	if err != nil {
 		switch err {
 		case context.Canceled:
-			return fmt.Errorf("ctx is canceled by another routine: %v", err)
+			return fmt.Errorf("ctx is canceled by another routine: %v\n", err)
 		case context.DeadlineExceeded:
-			return fmt.Errorf("ctx is attached with a deadline is exceeded: %v", err)
+			return fmt.Errorf("ctx is attached with a deadline is exceeded: %v\n", err)
 		case rpctypes.ErrEmptyKey:
-			return fmt.Errorf("client-side error: %v", err)
+			return fmt.Errorf("client-side error: %v\n", err)
 		default:
-			return fmt.Errorf("bad cluster endpoints, which are not etcd servers: %v", err)
+			return fmt.Errorf("bad cluster endpoints, which are not etcd servers: %v\n", err)
 		}
 	}
 	fmt.Printf("%+v\n", *resp)

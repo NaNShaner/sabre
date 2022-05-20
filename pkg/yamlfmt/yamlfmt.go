@@ -63,16 +63,16 @@ func YamlFmt(f string, s sabstruct.Config) (*sabstruct.Config, error) {
 // PrintResultJson 解析结果，并输出json
 func PrintResultJson(s interface{}) ([]byte, error) {
 	// 字典格式化为json
-	//data, err := json.Marshal(s)
-	//if err != nil {
-	//	fmt.Printf("JSON marshaling failed: %s", err)
-	//	return nil
-	//}
-
-	// 针对json增加人类的可读性
-	data, err := json.MarshalIndent(s, "", "    ")
+	data, err := json.Marshal(s)
 	if err != nil {
+		// fmt.Printf("JSON marshaling failed: %s", err)
 		log.Fatalf("JSON marshaling failed: %s", err)
 	}
+
+	// 针对json增加人类的可读性
+	//data, err := json.MarshalIndent(s, "", "    ")
+	//if err != nil {
+	//	log.Fatalf("JSON marshaling failed: %s", err)
+	//}
 	return data, err
 }
