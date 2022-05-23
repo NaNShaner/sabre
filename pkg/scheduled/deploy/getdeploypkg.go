@@ -5,6 +5,7 @@
 package deploy
 
 import (
+	"sabre/pkg/util/commontools"
 	"time"
 )
 
@@ -37,16 +38,14 @@ type DeployPkg struct {
 	DeployAction           // 执行动作
 }
 
-//SetConfigFile 修改配置文件
-//m: 顶层的结构体，来自用户输入的yaml解析之后的数据
-//f: 文件文件的绝对路径
-//func (u *Basest) SetConfigFile(m sabstruct.Config, f string) {
-//	// 默认配置默认配置来至 /root/.sabrefig/config
-//	defalutConfig := config.GetConfigSet()
-//	var Config sabstruct.Config
-//	// 获取用户输入的yaml文件
-//	yamlFmt, err := yamlfmt.YamlFmt(defalutConfig, Config)
-//	if err != nil {
-//		return
-//	}
-//}
+type ActionBaseInterface interface {
+
+	// Deploy 调度资源创建
+	Deploy(m *commontools.Basest) (string, error)
+	// Del 调度资源删除
+	Del(m *commontools.Basest) (string, error)
+	// Apply 调度资源修改
+	Apply(m *commontools.Basest) (string, error)
+	// Upload 信息上送API网关
+	Upload(m *commontools.Basest) (string, error)
+}

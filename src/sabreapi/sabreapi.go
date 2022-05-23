@@ -64,6 +64,7 @@ func main() {
 	http.HandleFunc("/midRegx/show", ShowInfoFromDB)
 	//r := NewRouter()
 	//r.Use(logger)
+	apiserver.Watch()
 	listenPort := "8081"
 	fmt.Printf("api server监听端口为 %s\n", listenPort)
 	err := http.ListenAndServe(":"+listenPort, nil)

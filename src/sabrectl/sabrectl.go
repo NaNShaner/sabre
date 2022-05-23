@@ -43,7 +43,7 @@ func main() {
 				fmt.Printf("%s\n", printResultJson)
 
 				// 执行安装操作
-				_, err = Ti.TomcatInstall((*commontools.Basest)(yamlFmt))
+				_, err = Ti.Deploy((*commontools.Basest)(yamlFmt))
 				if err != nil {
 					fmt.Printf("%s\n", err)
 					os.Exit(-1)

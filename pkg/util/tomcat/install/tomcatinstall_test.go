@@ -21,7 +21,7 @@ func TestTomcatInstall(t *testing.T) {
 	if err != nil {
 		return
 	}
-	//install, err := TomcatInstall((*commontools.Basest)(yamlFmt))
+	//install, err := Deploy((*commontools.Basest)(yamlFmt))
 	//if err != nil {
 	//	t.Errorf("install fail %s", err)
 	//}

@@ -19,12 +19,6 @@ type SabreSchedule interface {
 	Apply(*Bt) error
 }
 
-//Schedule 调度器
-type Schedule struct {
-	Server    string
-	ApiVesion string
-}
-
 //Watch 接收 sabrectl show 指令，从etcd中获取数据并反馈
 //func (s Schedule) Watch(wr http.ResponseWriter, r *http.Request) error {
 //

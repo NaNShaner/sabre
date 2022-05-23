@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sabre/pkg/config"
+	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct"
 	"strings"
 )
@@ -40,26 +41,12 @@ const (
 
 //CellApiServer 上送API网关
 func (u *Basest) CellApiServer() error {
-
 	return nil
 }
 
 //RegxEtcdKey 继续入库的key
 //TODO 判断资源类型，确定key
 func (u *Basest) RegxEtcdKey() string {
-	//switch u.Kind {
-	//case "mid":
-	//	{
-	//		return midRegx + u.Namespace + u.Midtype
-	//	}
-	//case "net":
-	//	{
-	//		return netRegx + u.Namespace + u.Midtype
-	//	}
-	//default:
-	//	return ""
-	//}
-	//strings.Join([]string{midRegx,u.Namespace,u.Midtype}, "/")
 	return strings.Join([]string{midRegx, u.Namespace, u.Midtype}, "/")
 }
 
@@ -111,11 +98,10 @@ func HttpReq(u *Basest) (string, error) {
 		return "", fmt.Errorf("ReadAll failed, url: %s, reqBody: %s, err: %v", apiUrl, reqBody, err)
 	}
 
-	//body := ioutil.NopCloser(strings.NewReader(string(bt)))
-	//fmt.Printf("apiUrl ==> %s\n", apiUrl)
-	//req, err := http.NewRequest("POST", apiUrl, body)
-	//if err != nil {
-	//	return nil, err
-	//}
 	return string(rspBody), nil
+}
+
+func Watch() {
+	go dbload.WatchFromDB(midRegx)
+	go dbload.WatchFromDB(netRegx)
 }

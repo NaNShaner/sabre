@@ -34,14 +34,22 @@ import (
 	"time"
 )
 
+func GetDBCli() (*clientv3.Client, error) {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints: []string{"124.71.219.53:2379"},
+		//Endpoints:   []string{"127.0.0.1:2379"},
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return cli, nil
+}
+
 //SetIntoDB 入库
 //TODO： apiserver的地址硬编码
 func SetIntoDB(k, v string) error {
-	cli, err := clientv3.New(clientv3.Config{
-		//Endpoints:   []string{"124.71.219.53:2379"},
-		Endpoints:   []string{"127.0.0.1:2379"},
-		DialTimeout: 5 * time.Second,
-	})
+	cli, err := GetDBCli()
 	if err != nil {
 		return err
 	}
@@ -65,4 +73,30 @@ func SetIntoDB(k, v string) error {
 	fmt.Printf("%+v\n", *resp)
 	return nil
 
+}
+
+//WatchFromDB 通过API网关对etcd中的资源类型进行watch，进行后续调度
+func WatchFromDB(s string) {
+	cli, err := GetDBCli()
+	if err != nil {
+		fmt.Printf("connect failed, %s\n", err)
+		return
+	}
+
+	fmt.Println("connect success")
+	defer cli.Close()
+
+	for {
+		// clientv3.WithPrefix() 监控s作为前缀key值的value变化，默认为精确watch
+		rch := cli.Watch(context.Background(), s, clientv3.WithPrefix())
+		for wresp := range rch {
+			err = wresp.Err()
+			if err != nil {
+				fmt.Println(err)
+			}
+			for _, ev := range wresp.Events {
+				fmt.Printf("%s %q %q\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+			}
+		}
+	}
 }

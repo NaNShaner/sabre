@@ -11,17 +11,17 @@ import (
 	"time"
 )
 
-//TomcatInstall 用户及用户组(判断||新建)-下载安装包-解压-修改配置文件-安装校验(尝试启动，并进行健康检查，通过后关闭)
+//Deploy 用户及用户组(判断||新建)-下载安装包-解压-修改配置文件-安装校验(尝试启动，并进行健康检查，通过后关闭)
 //TODO：信息上送网关并入库
 //TODO：ajp port 暂不支持修改
 //TODO：shutdown port 暂不支持修改
-func TomcatInstall(m *commontools.Basest) (string, error) {
+func Deploy(m *commontools.Basest) (string, error) {
 	if m.DeployAction.Action != "Install" {
 		return "", fmt.Errorf("yaml文件为声明Tomcat的安装行为\n")
 	}
 	unPackPath, err := m.InstallCommonStep()
 	if err != nil {
-		return "", fmt.Errorf("TomcatInstall 步骤执行失败，%s", err)
+		return "", fmt.Errorf("Deploy 步骤执行失败，%s", err)
 	}
 
 	// 如果用户未输入Tomcat的jvm参数，设置默认参数，默认参数来自/root/.sabrefig/config
@@ -60,6 +60,11 @@ func TomcatInstall(m *commontools.Basest) (string, error) {
 	}
 	fmt.Printf("命令执行情况%s", startMiddleware)
 
+	return fmt.Sprintf("%s delopy done\n", m.Midtype), nil
+
+}
+
+func Upload(m *commontools.Basest) (string, error) {
 	// 信息入库
 	setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(m))
 	if setInfoToDBErr != nil {
@@ -67,7 +72,18 @@ func TomcatInstall(m *commontools.Basest) (string, error) {
 	}
 	fmt.Printf("入库成功 ===> %s\n", setInfoToDB)
 	return "入库成功", nil
-	//return unPackPath, nil
+}
+
+func Apply(m *commontools.Basest) (string, error) {
+	return "", nil
+}
+
+func Del(m *commontools.Basest) (string, error) {
+	return "", nil
+}
+
+func Watch(m *commontools.Basest) (string, error) {
+	return "", nil
 }
 
 // GetTomcatHomePath 获取Tomcat安装目录
