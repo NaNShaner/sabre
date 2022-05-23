@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/c4milo/unpackit v0.1.0
 	github.com/go-playground/validator/v10 v10.11.0
+	github.com/gorilla/mux v1.8.0
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/spf13/cobra v1.4.0
 	go.etcd.io/etcd/api/v3 v3.5.4

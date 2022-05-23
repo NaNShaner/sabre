@@ -11,7 +11,7 @@ import (
 
 func TestTomcatInstall(t *testing.T) {
 	//var m commontools.Basest
-	f := "/Users/bijingrui/sabre/pkg/getdeploypkg/tomcatInstll.yaml"
+	f := "/Users/bijingrui/sabre/pkg/deploy/tomcatInstll.yaml"
 	yamlFmt, err := yamlfmt.YamlFmt(f, sabstruct.Config{})
 	printResultJson, err := yamlfmt.PrintResultJson((*commontools.Basest)(yamlFmt))
 	if err != nil {

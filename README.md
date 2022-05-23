@@ -18,11 +18,13 @@ Ubuntu 18.04
 go version go1.17.3 
 ```
 
+# 拓扑架构
+![img.png](docs/imgs/img.png)
 
 # Todo list
 - [x] 中间单资源部署，已完成Tomcat、Jdk
 - [ ] 完成本机器资源获取
-- [ ] 中间单资源部署，完成Nginx
+- [ ] 中间单资源部署，完成Nginx、Redis
 - [ ] 缓存资源部署，完成Redis集群部署
 - [ ] 完成Etcd存储交付资源
 - [ ] 完成资源集群模式的运维操作，包括启动、停止、重启

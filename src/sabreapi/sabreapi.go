@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"sabre/pkg/apiserver"
@@ -44,30 +45,18 @@ func SetToDB(wr http.ResponseWriter, req *http.Request) {
 
 //ShowInfoFromDB 接收 sabrectl show 指令，从etcd中获取数据并反馈
 func ShowInfoFromDB(wr http.ResponseWriter, req *http.Request) {
-
-}
-
-type middleware func(http.Handler) http.Handler
-
-type Router struct {
-	middlewareChain []middleware
-	mux             map[string]http.Handler
-}
-
-func NewRouter() *Router {
-	return &Router{}
-}
-
-func (r *Router) Use(m middleware) {
-	r.middlewareChain = append(r.middlewareChain, m)
-}
-
-func (r *Router) add(router string, h http.Handler) {
-	var mergedHandler = h
-	for i := len(r.middlewareChain) - 1; i >= 0; i-- {
-		mergedHandler = r.middlewareChain[i](mergedHandler)
+	resp, ok := mux.Vars(req)["kname"]
+	if !ok {
+		_, err := wr.Write([]byte("查询数据失败"))
+		if err != nil {
+			return
+		}
 	}
-	r.mux[router] = mergedHandler
+	//outputMsg, _ := fmt.Printf("查询数据成功\n %+v", mux.Vars(req))
+	_, outPutMsgErr := wr.Write([]byte(resp))
+	if outPutMsgErr != nil {
+		return
+	}
 }
 
 func main() {

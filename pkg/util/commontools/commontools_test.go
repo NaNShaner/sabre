@@ -29,8 +29,8 @@ func TestDeployPkg_GetDeployPkgFromUrl(t *testing.T) {
 
 func TestBasest_UnpackPkg(t *testing.T) {
 	var d Basest
-	tarFile := "/Users/bijingrui/awesomeProject/pkg/getdeploypkg/apache-tomcat-7.0.75.tar.gz"
-	d.Spec.InstallPath = "/Users/bijingrui/awesomeProject/pkg/getdeploypkg/"
+	tarFile := "/Users/bijingrui/awesomeProject/pkg/deploy/apache-tomcat-7.0.75.tar.gz"
+	d.Spec.InstallPath = "/Users/bijingrui/awesomeProject/pkg/deploy/"
 	_, err := (*Basest).UnpackPkg(&d, tarFile)
 	if err != nil {
 

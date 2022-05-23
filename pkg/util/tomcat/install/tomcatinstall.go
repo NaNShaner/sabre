@@ -60,7 +60,7 @@ func TomcatInstall(m *commontools.Basest) (string, error) {
 	}
 	fmt.Printf("命令执行情况%s", startMiddleware)
 
-	// 入库
+	// 信息入库
 	setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(m))
 	if setInfoToDBErr != nil {
 		return "", setInfoToDBErr
