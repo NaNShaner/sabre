@@ -17,6 +17,7 @@ namespace	host		midType	projectName	version
 MNPP		127.0.0.1 	Tomcat 	demo		7.0.78
 MNPP		127.0.0.2 	Tomcat 	demo		7.0.78
 
+
 sabrectl get tomcat demo -d
 输出：
 namespace	host		midType	projectName	port	version	monitor running	runningTime
@@ -82,8 +83,6 @@ func WatchFromDB(s string) {
 		fmt.Printf("connect failed, %s\n", err)
 		return
 	}
-
-	fmt.Println("connect success")
 	defer cli.Close()
 
 	for {
@@ -95,6 +94,7 @@ func WatchFromDB(s string) {
 				fmt.Println(err)
 			}
 			for _, ev := range wresp.Events {
+				//TODO 判断执行动作，发起调度指令
 				fmt.Printf("%s %q %q\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
 			}
 		}

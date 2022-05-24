@@ -1,5 +1,3 @@
-
-![](https://img.shields.io/badge/build-passing-green.svg)
 # Sabre (佩剑)
 以K8s的资源管理模式，管理非云上的资源。
 

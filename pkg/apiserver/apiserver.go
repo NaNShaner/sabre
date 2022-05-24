@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sabre/pkg/config"
-	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct"
 	"strings"
 )
@@ -32,11 +31,11 @@ type ToDBServer struct {
 }
 
 const (
-	//regx 应用资源注册前缀
-	midRegx = "/mid"
+	//MidRegx 应用资源注册前缀
+	MidRegx = "/mid"
 
-	//regx 应用资源注册前缀
-	netRegx = "/net"
+	//NetRegx 应用资源注册前缀
+	NetRegx = "/net"
 )
 
 //CellApiServer 上送API网关
@@ -47,7 +46,7 @@ func (u *Basest) CellApiServer() error {
 //RegxEtcdKey 继续入库的key
 //TODO 判断资源类型，确定key
 func (u *Basest) RegxEtcdKey() string {
-	return strings.Join([]string{midRegx, u.Namespace, u.Midtype}, "/")
+	return strings.Join([]string{MidRegx, u.Namespace, u.Midtype}, "/")
 }
 
 //RegxEtcValue 继续入库的value
@@ -99,9 +98,4 @@ func HttpReq(u *Basest) (string, error) {
 	}
 
 	return string(rspBody), nil
-}
-
-func Watch() {
-	go dbload.WatchFromDB(midRegx)
-	go dbload.WatchFromDB(netRegx)
 }

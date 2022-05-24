@@ -19,9 +19,12 @@ type Config struct {
 
 // Metadata 存放中间件所属应用的信息
 type Metadata struct {
+	//Namespace 应用系统简称
 	Namespace string `json:"namespace"`
-	Netarea   string `json:"netarea"`
-	Appname   string `json:"appname,omitempty"`
+	//Netarea Appname 所属网络安全域
+	Netarea string `json:"netarea"`
+	//Appname 应用名称
+	Appname string `json:"appname,omitempty"`
 }
 
 // Spec 存放中间件本身版本及其配置参数信息
@@ -55,31 +58,31 @@ type DeployAction struct {
 	//ReInstall string    `json:"re_install"`      // 重装
 	//Apply     string    `json:"apply"`           // 配置修改
 	//OffLine   string    `json:"off_line"`        // 下线
-	//Start     string    `json:"start"`           //	启动
-	//Stop      string    `json:"stop"`            //	停止
+	//Start     string    `json:"start"`           // 启动
+	//Stop      string    `json:"stop"`            // 停止
 	//Restop    string    `json:"restop"`          // 重启
 }
 
 // Jdk 在~/.sabrefig/config 文件的默认配置
 type Jdk struct {
-	Javaopts          string `json:"javaopts"`
-	JdkAppInstallPath string `json:"appinstallpath"`
-	JdkStartUpFile    string `json:"startup"`
+	Javaopts          string `json:"javaopts,omitempty"`
+	JdkAppInstallPath string `json:"appinstallpath,omitempty"`
+	JdkStartUpFile    string `json:"startup,omitempty"`
 }
 
 // Tomcat 在.sabrefig/config 文件的默认配置
 type Tomcat struct {
-	Javaopts      string `json:"javaopts"`
-	ListeningPort string `json:"listeningport"`
-	AjpPort       string `json:"ajpport"`
-	AjpRirectPort string `json:"ajprirectport"`
-	ShutdownPort  string `json:"shutdownport"`
+	Javaopts      string `json:"javaopts,omitempty"`
+	ListeningPort string `json:"listeningport,omitempty"`
+	AjpPort       string `json:"ajpport,omitempty"`
+	AjpRirectPort string `json:"ajprirectport,omitempty"`
+	ShutdownPort  string `json:"shutdownport,omitempty"`
 }
 
 // DefaultConfig 各类资源在.sabrefig/config 文件的默认配置
 type DefaultConfig struct {
-	Jdk    `json:"jdk"`
-	Tomcat `json:"tomcat"`
+	Jdk    `json:"jdk,omitempty"`
+	Tomcat `json:"tomcat,omitempty"`
 }
 
 //IsZero 校验必填字段
