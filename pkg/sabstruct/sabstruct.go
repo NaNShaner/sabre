@@ -51,9 +51,9 @@ type User struct {
 // Action，针对Tomcat 包含Install
 // Action，针对Jdk 包含Install，appInstall。含义是Install仅安装jdk并配置环境变量、 appInstall表示安装jdk、配置变量并且生成启动jar包的文件目录以及启动脚本
 type DeployAction struct {
-	Timer      time.Time `json:"timer,omitempty"` // 执行时间
-	Action     string    `json:"action"`
-	DeployHost []string  `json:"deploy_host"`
+	Timer      string   `json:"timer,omitempty"` // 执行时间
+	Action     string   `json:"action"`
+	DeployHost []string `json:"deploy_host"`
 	//Install   string    `json:"install"`         // 部署
 	//ReInstall string    `json:"re_install"`      // 重装
 	//Apply     string    `json:"apply"`           // 配置修改
@@ -88,4 +88,15 @@ type DefaultConfig struct {
 //IsZero 校验必填字段
 func (n *Config) IsZero() bool {
 	return n.Kind == "" && n.ApiVersion == "" && n.Metadata == Metadata{}
+}
+
+func (n *Config) AddNowTime() *Config {
+	var cstSh, _ = time.LoadLocation("Asia/Shanghai") //上海
+	t := time.Now().In(cstSh).Format("2006-01-02 15:04:05.1234")
+	n.Timer = t
+	return n
+}
+
+func init() {
+
 }

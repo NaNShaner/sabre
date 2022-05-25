@@ -25,11 +25,6 @@ type ApiServer struct {
 	ProjectName string `json:"projectname,omitempty"`
 }
 
-type ToDBServer struct {
-	Kname string `json:"kname"`
-	Vname Basest `json:"vname"`
-}
-
 const (
 	//MidRegx 应用资源注册前缀
 	MidRegx = "/mid"
@@ -57,7 +52,6 @@ func (u *Basest) RegxEtcValue() Basest {
 
 //HttpReq 与API网关交互
 func HttpReq(u *Basest) (string, error) {
-	var dbInfo ToDBServer
 
 	apiServer, apiServerErr := config.GetApiServerUrl()
 	if apiServerErr != nil {
@@ -68,12 +62,12 @@ func HttpReq(u *Basest) (string, error) {
 	etcdValue := u.RegxEtcValue()
 	fmt.Printf("HttpReq ==> k:%s \nv:+%v\n", etcdKey, etcdValue)
 	insertDB := make(map[string]Basest)
-	dbInfo.Kname = etcdKey
-	dbInfo.Vname = etcdValue
+	//dbInfo.Kname = etcdKey
+	//dbInfo.Vname = etcdValue
 
 	insertDB[etcdKey] = etcdValue
 	apiUrl := apiServer + "/midRegx/set"
-	bt, err := json.Marshal(dbInfo)
+	bt, err := json.Marshal(insertDB)
 
 	reqBody := strings.NewReader(string(bt))
 	httpReq, err := http.NewRequest("POST", apiUrl, reqBody)

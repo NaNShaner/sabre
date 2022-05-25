@@ -6,15 +6,17 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"sabre/pkg/apiserver"
 	"sabre/pkg/dbload"
+	"sabre/pkg/sabstruct"
 	"sabre/pkg/yamlfmt"
 )
 
+type Basest sabstruct.Config
+
 //SetToDB 从 sabrectl 接收数据，保存进入etcd
 func SetToDB(wr http.ResponseWriter, req *http.Request) {
-	var DBStruct apiserver.ToDBServer
-
+	// var DBStruct apiserver.ToDBServer
+	DBStruct := make(map[string]Basest)
 	contentLength := req.ContentLength
 	body := make([]byte, contentLength)
 	req.Body.Read(body)
@@ -25,14 +27,18 @@ func SetToDB(wr http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		http.Error(wr, err.Error(), http.StatusBadRequest)
 	}
-	resultJson, err := yamlfmt.PrintResultJson(DBStruct)
-	if err != nil {
-		http.Error(wr, err.Error(), http.StatusBadRequest)
+
+	for s, basest := range DBStruct {
+		resultJson, err := yamlfmt.PrintResultJson(basest)
+		if err != nil {
+			http.Error(wr, err.Error(), http.StatusBadRequest)
+		}
+		if err := dbload.SetIntoDB(s, string(resultJson)); err != nil {
+			http.Error(wr, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
-	if err := dbload.SetIntoDB(DBStruct.Kname, string(resultJson)); err != nil {
-		http.Error(wr, err.Error(), http.StatusBadRequest)
-		return
-	}
+
 	//
 	//outputMsg := strings.Replace("信息入库成功 SetInfoToDB\n", "SetInfoToDB", string(resultJson), -1)
 	//_, outPutMsgErr := wr.Write([]byte(outputMsg))
