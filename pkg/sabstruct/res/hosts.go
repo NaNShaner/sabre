@@ -2,18 +2,29 @@ package res
 
 import "net"
 
+type HostStatus struct {
+	Status bool
+}
+
+type MonitorStaus struct {
+	Ping bool
+	Mem  map[float64]float64
+}
+
 type Hosts struct {
 	HostName     string
-	IPAddr       net.IPAddr
+	IPAddr       net.IP
 	Online       bool
 	OnlineStatus []string
 	BelongTo     string
+	Area         string
+	annotation   string
+	HostStatus
+	MonitorStaus
 }
 
 type HostRegister interface {
-	ServerRegister(*Hosts) (string, error)
-}
-
-func (h *Hosts) ServerRegister() (string, error) {
-	return "", nil
+	ServerRegister() (string, error)
+	Ping(ip net.IP) (bool, error)
+	IpFmt(ip string) (net.IP, error)
 }

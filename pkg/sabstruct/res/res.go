@@ -19,8 +19,9 @@ func SetResRegx(regx []string) SabRes {
 	return r
 }
 
+//Register 资源注册
 func Register() SabRes {
-	res := []string{"mid", "net"}
+	res := []string{"mid", "net", "hosts"}
 	rs := SetResRegx(res)
 	fmt.Printf("纳管资源注册信息列表%q\n", rs)
 	return rs
