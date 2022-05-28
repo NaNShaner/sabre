@@ -1,21 +1,20 @@
-package sabrelet
+package main
 
 import (
-	"net"
+	"fmt"
+	"log"
+	"net/http"
+	"sabre/pkg/util/hostregister"
 )
 
-type NetInfo struct {
-}
-
-type ServerInfo struct {
-	NameSpace string
-	AreaZone  string
-	HostName  string
-	IpAddr    net.IPAddr
-	//MemInfo
-	//CpuInfo
-	NetInfo
-}
-
-type ListenAndAction interface {
+func main() {
+	http.HandleFunc("/hostInfo/register", hostregister.RegInfoToDB)
+	//r := NewRouter()
+	//r.Use(logger)
+	listenPort := "18081"
+	fmt.Printf("The listening port of the sabrelet server is %s\n", listenPort)
+	err := http.ListenAndServe(":"+listenPort, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

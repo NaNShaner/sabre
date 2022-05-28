@@ -58,6 +58,7 @@ func Changefile(f string, r ...map[string]string) error {
 	defer out.Close()
 
 	br := bufio.NewReader(in)
+loop:
 	for {
 		line, _, err := br.ReadLine()
 		//fmt.Printf("未匹配文本行%q\n", string(line))
@@ -67,7 +68,9 @@ func Changefile(f string, r ...map[string]string) error {
 		if err != nil {
 			return fmt.Errorf("读取%s文件失败: %s", f, err)
 		}
+
 		for _, m := range r {
+
 			// k 是在配置文件中已经标记可以替换的文件
 			// v 是被替换的内容
 			for k, v := range m {
@@ -76,12 +79,10 @@ func Changefile(f string, r ...map[string]string) error {
 					filePerLine = append(filePerLine, newLine)
 
 					fmt.Printf("k:%s, 替换为%s\n", k, v)
-
-				} else {
-					filePerLine = append(filePerLine, string(line))
-					break
+					continue loop
 				}
 			}
+			filePerLine = append(filePerLine, string(line))
 		}
 
 	}

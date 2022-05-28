@@ -1,0 +1,36 @@
+apiversion: beta
+kind: Config
+server: http://126.1.1.1
+apiserver: http://126.1.1.1
+metadata:
+    namespace: ERP
+    netarea: APP
+    appname: demo
+spec:
+    midtype: Tomcat
+    version: 7.0.78
+    port: "8099"
+    installpath: /u01/app
+    pkgdownloadpath: http://126.1.1.1
+    midruntype:
+        - cluster
+        - standalone
+    user:
+        name: miduser
+        group: miduser
+    defaultconfig:
+        jdk:
+            javaopts: ""
+            jdkappinstallpath: ""
+            jdkstartupfile: ""
+        tomcat:
+            javaopts: -server -Xms1024M -Xmx1024M -Xss512k -XX:PermSize=1024M -XX:MaxPermSize=1024M
+            listeningport: "8099"
+            ajpport: "8009"
+            ajprirectport: ""
+            shutdownport: "8005"
+    deployaction:
+        action: Install
+        deployhost:
+            - 127.0.0.1
+            - 127.0.0.2

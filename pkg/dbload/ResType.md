@@ -9,7 +9,7 @@
 |中间件|mid|
 |网络资源|net|
 |存储资源|storage|
-|计算资源|machine|
+|计算资源|hosts|
 
 ### namespace，表示当前资源所属的系统简称
 例如：ERP
@@ -21,6 +21,7 @@
 - 数据资源：Mysql、PG
 - 网络资源：F5、DNS
 - 存储资源：Nas、oss
+- 计算资源：machine
 
 ### 资源提供方式，可选
 例如：

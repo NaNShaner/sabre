@@ -50,5 +50,14 @@ func GetApiServerUrl() (string, error) {
 	}
 
 	return sabreConfig.ApiServer, nil
+}
 
+//GetLetServerUrl 获取API网关的地址
+func GetLetServerUrl() (string, error) {
+	sabreConfig, err := GetConfigSet()
+	if err != nil {
+		return "", err
+	}
+
+	return sabreConfig.LocalLetServer, nil
 }

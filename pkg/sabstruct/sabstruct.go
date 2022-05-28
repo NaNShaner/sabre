@@ -9,12 +9,13 @@ import (
 //	Deployment:资源类型	config:配置文件
 type Config struct {
 	// validate 必填字段
-	ApiVersion string `json:"apiVersion" validate:"required"`
-	Kind       string `json:"kind" validate:"required"`
-	Server     string `json:"server"`
-	ApiServer  string `json:"apiserver"`
-	Metadata   `json:"metadata"`
-	Spec       `json:"spec"`
+	ApiVersion     string `json:"apiVersion" validate:"required"`
+	Kind           string `json:"kind" validate:"required"`
+	Server         string `json:"server"`
+	ApiServer      string `json:"apiserver"`
+	LocalLetServer string `json:"letserver"`
+	Metadata       `json:"metadata"`
+	Spec           `json:"spec"`
 }
 
 // Metadata 存放中间件所属应用的信息

@@ -32,9 +32,21 @@ import (
 	"fmt"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"strings"
 	"time"
 )
 
+var (
+	midRegx  = "mid"
+	hostRegx = "hosts"
+)
+
+var (
+	midTomcat = "tomcat"
+	// midJDK    = "jdk"
+)
+
+//GetDBCli 获取ETCDCli
 func GetDBCli() (*clientv3.Client, error) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints: []string{"124.71.219.53:2379"},
@@ -44,7 +56,7 @@ func GetDBCli() (*clientv3.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return cli, nil
+	return cli, err
 }
 
 //SetIntoDB 入库
@@ -94,9 +106,60 @@ func WatchFromDB(s string) {
 				fmt.Println(err)
 			}
 			for _, ev := range wresp.Events {
-				//TODO 判断执行动作，发起调度指令
+				//TODO: 判断执行动作，发起调度指令
 				fmt.Printf("%s %q %q\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+				keySplit, err := keySplit(ev.Kv.Key)
+				if err != nil {
+					return
+				}
+				switch {
+				case isMidType(keySplit):
+					fmt.Printf("isMidType: %s\n", ev.Kv.Key)
+					switch {
+					case isMidTypeOfTomcat(keySplit):
+						fmt.Printf("isMidTypeOfTomcat %s\n", ev.Kv.Key)
+					}
+				case isMidHost(keySplit):
+					fmt.Printf("isMidHost: %s\n", ev.Kv.Key)
+				default:
+					return
+				}
+
 			}
 		}
+	}
+}
+
+func keySplit(t []byte) (string, error) {
+	s := string(t)
+	sSplit := strings.Split(s, "/")
+	if len(sSplit) < 1 {
+		return "", fmt.Errorf("Etcd key %s is not in normal format\n", s)
+	}
+	return sSplit[1], nil
+}
+
+func isMidType(t string) bool {
+	if strings.Contains(t, midRegx) {
+		return true
+	} else {
+		return false
+	}
+}
+
+func isMidTypeOfTomcat(t string) bool {
+
+	if strings.Contains(t, midTomcat) {
+		return true
+	} else {
+		return false
+	}
+}
+
+func isMidHost(t string) bool {
+	if strings.Contains(t, hostRegx) {
+		return true
+	} else {
+		return false
 	}
 }
