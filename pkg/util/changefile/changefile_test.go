@@ -16,7 +16,7 @@ func TestChangefile(t *testing.T) {
 	serverXmlReplace["shutdownport"] = "8099"
 	serverXmlReplace["listeningport"] = "8009"
 	serverXmlReplace["ajpport"] = "8005"
-	serverXmlReplace["ajprirectport"] = "8443"
+	//serverXmlReplace["ajprirectport"] = "8443"
 	fc := "/Users/bijingrui/sabre/pkg/util/changefile/s.xml"
 	err := Changefile(fc, serverXmlReplace)
 	if err != nil {

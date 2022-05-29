@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
+	"sabre/pkg/apiserver"
 	"sabre/pkg/sabstruct"
 	"sabre/pkg/util/commontools"
 	Ti "sabre/pkg/util/tomcat/install"
@@ -29,7 +30,13 @@ var cmdDeployTomcat = &cobra.Command{
 				return
 			}
 			fmt.Printf("%s\n", printResultJson)
-
+			// 信息入库
+			setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(yamlFmt))
+			if setInfoToDBErr != nil {
+				fmt.Printf("%s\n", setInfoToDBErr)
+				os.Exit(-1)
+			}
+			fmt.Printf("Tomcat information warehousing succeeded，%s\n", setInfoToDB)
 			// 执行安装操作
 			_, err = Ti.Deploy((*commontools.Basest)(yamlFmt))
 			if err != nil {

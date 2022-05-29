@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
-	"sabre/pkg/apiserver"
 	"sabre/pkg/config"
 	"sabre/pkg/util/changefile"
 	"sabre/pkg/util/commontools"
@@ -64,15 +63,15 @@ func Deploy(m *commontools.Basest) (string, error) {
 
 }
 
-func Upload(m *commontools.Basest) (string, error) {
-	// 信息入库
-	setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(m))
-	if setInfoToDBErr != nil {
-		return "", setInfoToDBErr
-	}
-	fmt.Printf("入库成功 ===> %s\n", setInfoToDB)
-	return "入库成功", nil
-}
+//func Upload(m *commontools.Basest) (string, error) {
+//	// 信息入库
+//	setInfoToDB, setInfoToDBErr := m.SetInfoToDB()
+//	if setInfoToDBErr != nil {
+//		return "", setInfoToDBErr
+//	}
+//	fmt.Printf("入库成功 ===> %s\n", setInfoToDB)
+//	return setInfoToDB, nil
+//}
 
 func Apply(m *commontools.Basest) (string, error) {
 	return "", nil
@@ -124,7 +123,9 @@ func ChangeCatalinaSh(m *commontools.Basest, p, file string) error {
 //ChangeServerXml  修改server.xml
 func ChangeServerXml(m *commontools.Basest, p, file string) error {
 	serverXmlReplace := make(map[string]string)
-	serverXmlReplace["listeningport"] = m.Spec.DefaultConfig.Tomcat.ShutdownPort
+	serverXmlReplace["listeningport"] = m.Spec.DefaultConfig.Tomcat.ListeningPort
+	serverXmlReplace["shutdownport"] = m.Spec.DefaultConfig.Tomcat.ShutdownPort
+	serverXmlReplace["ajpport"] = m.Spec.DefaultConfig.Tomcat.AjpPort
 	serverXml := p + file
 	serverXmlReplaceErr := changefile.Changefile(serverXml, serverXmlReplace)
 	if serverXmlReplaceErr != nil {

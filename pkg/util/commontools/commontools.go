@@ -30,7 +30,7 @@ type InstallComm interface {
 	UnpackPkg(tarFileAbsPath string) (string, error)
 	ExecCmdWithTimeOut(startscript string, timer time.Duration) (string, error)
 	InstallCommonStep() (string, error)
-	//SetInfoToDB() (*http.Request, error)
+	//SetInfoToDB() (string, error)
 }
 
 // GetDeployPkgFromUrl 从服务端获取安装包或者配置文件等
@@ -143,13 +143,13 @@ func (u *Basest) InstallCommonStep() (string, error) {
 	}
 }
 
-////SetInfoToDB 请求API网关，信息入库
-//func (u *Basest) SetInfoToDB() (*http.Request, error) {
-//	req, reqErr := u.HttpReq()
-//	if reqErr != nil {
-//		return nil, reqErr
+//SetInfoToDB 请求API网关，信息入库
+//func (u *Basest) SetInfoToDB() (string, error) {
+//	setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(u))
+//	if setInfoToDBErr != nil {
+//		return "", setInfoToDBErr
 //	}
-//	return req, nil
+//	return setInfoToDB, nil
 //}
 
 //GetLocalServerName 获取本机主机名

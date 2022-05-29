@@ -11,9 +11,9 @@ type Config struct {
 	// validate 必填字段
 	ApiVersion     string `json:"apiVersion" validate:"required"`
 	Kind           string `json:"kind" validate:"required"`
-	Server         string `json:"server"`
-	ApiServer      string `json:"apiserver"`
-	LocalLetServer string `json:"letserver"`
+	Server         string `json:"server,omitempty"`
+	ApiServer      string `json:"apiserver,omitempty"`
+	LocalLetServer string `json:"letserver,omitempty"`
 	Metadata       `json:"metadata"`
 	Spec           `json:"spec"`
 }
@@ -33,7 +33,6 @@ type Metadata struct {
 type Spec struct {
 	Midtype         string   `json:"midtype"`
 	Version         string   `json:"version"`
-	Port            string   `json:"port,omitempty"`
 	InstallPath     string   `json:"installPath"`
 	PKGDownloadPath string   `json:"pkgDownloadPath"`
 	MidRunType      []string `json:"run_type,omitempty"` // 运行模式，集群、主备、冷备等等
@@ -76,8 +75,8 @@ type Tomcat struct {
 	Javaopts      string `json:"javaopts,omitempty"`
 	ListeningPort string `json:"listeningport,omitempty"`
 	AjpPort       string `json:"ajpport,omitempty"`
-	AjpRirectPort string `json:"ajprirectport,omitempty"`
-	ShutdownPort  string `json:"shutdownport,omitempty"`
+	//AjpRirectPort string `json:"ajprirectport,omitempty"`
+	ShutdownPort string `json:"shutdownport,omitempty"`
 }
 
 // DefaultConfig 各类资源在.sabrefig/config 文件的默认配置

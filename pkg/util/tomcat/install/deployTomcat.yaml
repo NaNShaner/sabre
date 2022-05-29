@@ -1,7 +1,5 @@
 apiversion: beta
 kind: Config
-server: http://126.1.1.1
-apiserver: http://126.1.1.1
 metadata:
     namespace: ERP
     netarea: APP
@@ -11,7 +9,7 @@ spec:
     version: 7.0.78
     port: "8099"
     installpath: /u01/app
-    pkgdownloadpath: http://126.1.1.1
+    pkgdownloadpath: http://124.71.219.53:8001/uploads/uploads/2022/05/07/apache-tomcat-7.0.75.tar.gz
     midruntype:
         - cluster
         - standalone
