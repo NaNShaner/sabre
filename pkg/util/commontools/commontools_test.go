@@ -50,3 +50,15 @@ func TestBasest_StartMiddleware(t *testing.T) {
 	}
 	t.Log(startMiddlewareReslut)
 }
+
+func TestBasest_CheckInstallServerBelongToNS(t *testing.T) {
+	var d Basest
+
+	d.DeployHost = []string{"192.168.3.57", "192.168.3.58"}
+	d.Netarea = "app"
+	d.Namespace = "erp"
+	err := d.CheckInstallServerBelongToNS()
+	if err != nil {
+		t.Error(err)
+	}
+}

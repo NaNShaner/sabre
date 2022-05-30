@@ -19,10 +19,14 @@ func SetResRegx(regx []string) SabRes {
 	return r
 }
 
+//ManageResourceTypes 纳管的资源类型
+func ManageResourceTypes() []string {
+	return []string{"mid", "net", "hosts"}
+}
+
 //Register 资源注册
 func Register() SabRes {
-	res := []string{"mid", "net", "hosts"}
-	rs := SetResRegx(res)
+	rs := SetResRegx(ManageResourceTypes())
 	fmt.Printf("纳管资源注册信息列表%q\n", rs)
 	return rs
 }

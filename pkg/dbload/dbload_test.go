@@ -28,3 +28,12 @@ func TestSetIntoDB(t *testing.T) {
 	}
 	t.Log("done")
 }
+
+func TestGetKeyWithPrefix(t *testing.T) {
+	k := "/hosts/erp/machine/app/"
+	prefix, err := GetKeyWithPrefix(k)
+	if err != nil {
+		return
+	}
+	t.Log(prefix)
+}

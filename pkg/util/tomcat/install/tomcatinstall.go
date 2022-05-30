@@ -73,18 +73,6 @@ func Deploy(m *commontools.Basest) (string, error) {
 //	return setInfoToDB, nil
 //}
 
-func Apply(m *commontools.Basest) (string, error) {
-	return "", nil
-}
-
-func Del(m *commontools.Basest) (string, error) {
-	return "", nil
-}
-
-func Watch(m *commontools.Basest) (string, error) {
-	return "", nil
-}
-
 // GetTomcatHomePath 获取Tomcat安装目录
 func GetTomcatHomePath(m *commontools.Basest) (string, error) {
 	InstallHomePath, getInstallHomePathErr := ioutil.ReadDir(m.Spec.InstallPath)

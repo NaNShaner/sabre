@@ -62,7 +62,7 @@ type HostRegister interface {
 	AddAnnotation(a ...string) []string
 }
 
-func (h *Hosts) ServerRegister(ip, beloogto, area string) (Hosts, error) {
+func (h *Hosts) ServerRegister(ip, belongto, area string) (Hosts, error) {
 	h.HostInfo, _ = h.GetOsInfo()
 	hostName, getHostNameErr := os.Hostname()
 	if getHostNameErr != nil {
@@ -75,7 +75,7 @@ func (h *Hosts) ServerRegister(ip, beloogto, area string) (Hosts, error) {
 		return Hosts{}, IpFmtErr
 	}
 	h.IPAddr = ipAddr
-	h.BelongTo = beloogto
+	h.BelongTo = belongto
 	h.Area = area
 
 	h.Online = true

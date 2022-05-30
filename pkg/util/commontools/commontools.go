@@ -11,7 +11,9 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct"
+	"sabre/pkg/sabstruct/res"
 	"sabre/pkg/util/aboutuser"
 	"strings"
 	"time"
@@ -30,7 +32,31 @@ type InstallComm interface {
 	UnpackPkg(tarFileAbsPath string) (string, error)
 	ExecCmdWithTimeOut(startscript string, timer time.Duration) (string, error)
 	InstallCommonStep() (string, error)
-	//SetInfoToDB() (string, error)
+
+	//Download()
+	//Unpack()
+	//ExecCmd()
+	//Install()
+}
+
+type Download interface {
+	GetDeployPkgFromUrl(pkgUrl string) (string, error)
+}
+
+type Unpack interface {
+	UnpackPkg(tarFileAbsPath string) (string, error)
+}
+
+type ExecCmd interface {
+	ExecCmdWithTimeOut(startscript string, timer time.Duration) (string, error)
+}
+
+type Install interface {
+	InstallCommonStep() (string, error)
+}
+
+type CheckIP interface {
+	CheckInstallServerBelongToNS() error
 }
 
 // GetDeployPkgFromUrl 从服务端获取安装包或者配置文件等
@@ -143,6 +169,22 @@ func (u *Basest) InstallCommonStep() (string, error) {
 	}
 }
 
+func (u *Basest) CheckInstallServerBelongToNS() error {
+	keyPrefix := "/" + res.ManageResourceTypes()[2]
+	resType := "/machine"
+	key := path.Join(keyPrefix, u.Namespace, resType, u.Netarea)
+	allAvailableServer, getErr := dbload.GetKeyWithPrefix(key)
+	if getErr != nil {
+		return getErr
+	}
+	for _, s := range u.DeployHost {
+		if !InMap(ConvertStrSlice2Map(allAvailableServer), s) {
+			return fmt.Errorf("host %s does not belong to %s system", s, u.Namespace)
+		}
+	}
+	return nil
+}
+
 //SetInfoToDB 请求API网关，信息入库
 //func (u *Basest) SetInfoToDB() (string, error) {
 //	setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(u))
@@ -191,4 +233,19 @@ func GetHostIP(ip net.IP) (bool, error) {
 		}
 	}
 	return false, fmt.Errorf("%s is not the IP address of the current machine, please confirm\n", ip.String())
+}
+
+// ConvertStrSlice2Map 将字符串 slice 转为 map[string]struct{}。
+func ConvertStrSlice2Map(sl []string) map[string]struct{} {
+	set := make(map[string]struct{}, len(sl))
+	for _, v := range sl {
+		set[v] = struct{}{}
+	}
+	return set
+}
+
+// InMap 判断字符串是否在 map 中。
+func InMap(m map[string]struct{}, s string) bool {
+	_, ok := m[s]
+	return ok
 }

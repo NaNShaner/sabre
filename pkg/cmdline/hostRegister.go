@@ -19,15 +19,14 @@ var cmdHostRegister = &cobra.Command{
 	Args:  cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		// 发起请求主机注册请求给到saberlet
-		hostName, getHostNameErr := commontools.GetLocalServerName()
-		if getHostNameErr != nil {
-			fmt.Println(getHostNameErr)
-			os.Exit(-1)
-		}
 		var h res.Hosts
-		kName := hostregister.KeyName(namespace, hostName, area)
-
 		for _, f := range args {
+			hostName, getHostNameErr := commontools.GetLocalServerName()
+			if getHostNameErr != nil {
+				fmt.Println(getHostNameErr)
+				os.Exit(-1)
+			}
+			kName := hostregister.KeyName(namespace, hostName, area, f)
 			valueName, err := hostregister.ValueName(&h, f, namespace, area)
 			if err != nil {
 				fmt.Printf("%s\n", err)

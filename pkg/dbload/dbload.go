@@ -130,6 +130,27 @@ func WatchFromDB(s string) {
 	}
 }
 
+func GetKeyWithPrefix(k string) ([]string, error) {
+	cli, err := GetDBCli()
+	if err != nil {
+		return nil, fmt.Errorf("connect failed, %s\n", err)
+	}
+	defer cli.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	resp, getKeyErr := cli.Get(ctx, k, clientv3.WithPrefix())
+	cancel()
+	if getKeyErr != nil {
+
+		return nil, fmt.Errorf("get from etcd failed, err:%v\n", getKeyErr)
+	}
+	var s []string
+	for _, ev := range resp.Kvs {
+		fmt.Printf("%s:%s\n", ev.Key, ev.Value)
+		s = append(s, string(ev.Key))
+	}
+	return s, nil
+}
+
 func keySplit(t []byte) (string, error) {
 	s := string(t)
 	sSplit := strings.Split(s, "/")

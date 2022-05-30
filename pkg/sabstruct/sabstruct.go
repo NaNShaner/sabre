@@ -96,7 +96,3 @@ func (n *Config) AddNowTime() *Config {
 	n.Timer = t
 	return n
 }
-
-func init() {
-
-}

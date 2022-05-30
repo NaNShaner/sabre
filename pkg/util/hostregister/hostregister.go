@@ -47,11 +47,12 @@ func RegInfoToDB(wr http.ResponseWriter, req *http.Request) {
 // n namespace
 // h hostname
 // a area
+// i ip addr
 // e.g. /hosts/erp/machine/app/hostname
-func KeyName(n, h, a string) string {
+func KeyName(n, h, a, i string) string {
 	regx := "/hosts"
 	resType := "/machine"
-	return path.Join(regx, n, resType, a, h)
+	return path.Join(regx, n, resType, a, h, i)
 }
 
 //ValueName 入库的value
@@ -84,7 +85,7 @@ func SetHttpReq(etcdKey string, etcdValue res.Hosts) (string, error) {
 	insertDB[etcdKey] = etcdValue
 	apiUrl := apiServer + "/hostInfo/register"
 	bt, err := json.Marshal(insertDB)
-	fmt.Printf("apiUrl:%s \n", apiUrl)
+	//fmt.Printf("apiUrl:%s \n", apiUrl)
 	reqBody := strings.NewReader(string(bt))
 	httpReq, err := http.NewRequest("POST", apiUrl, reqBody)
 	if err != nil {
