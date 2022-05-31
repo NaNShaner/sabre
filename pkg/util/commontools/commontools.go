@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/c4milo/unpackit"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 	"io"
 	"net"
 	"net/http"
@@ -169,6 +170,7 @@ func (u *Basest) InstallCommonStep() (string, error) {
 	}
 }
 
+//CheckInstallServerBelongToNS 解析yaml文件中 u.DeployHost 字段中的地址是否属于系统下的地址
 func (u *Basest) CheckInstallServerBelongToNS() error {
 	keyPrefix := "/" + res.ManageResourceTypes()[2]
 	resType := "/machine"
@@ -178,7 +180,7 @@ func (u *Basest) CheckInstallServerBelongToNS() error {
 		return getErr
 	}
 	for _, s := range u.DeployHost {
-		if !InMap(ConvertStrSlice2Map(allAvailableServer), s) {
+		if !InMap(ConvertStrSlice2Map(GetKeyFromDB(allAvailableServer)), s) {
 			return fmt.Errorf("host %s does not belong to %s system", s, u.Namespace)
 		}
 	}
@@ -235,7 +237,7 @@ func GetHostIP(ip net.IP) (bool, error) {
 	return false, fmt.Errorf("%s is not the IP address of the current machine, please confirm\n", ip.String())
 }
 
-// ConvertStrSlice2Map 将字符串 slice 转为 map[string]struct{}。
+// ConvertStrSlice2Map 将字符串 slice 转为 map[string]struct{}，空结构体不再用内存
 func ConvertStrSlice2Map(sl []string) map[string]struct{} {
 	set := make(map[string]struct{}, len(sl))
 	for _, v := range sl {
@@ -248,4 +250,14 @@ func ConvertStrSlice2Map(sl []string) map[string]struct{} {
 func InMap(m map[string]struct{}, s string) bool {
 	_, ok := m[s]
 	return ok
+}
+
+func GetKeyFromDB(kv []*mvccpb.KeyValue) []string {
+	var s []string
+	for _, ev := range kv {
+		fmt.Printf("%s\n", ev.Key)
+		getServerList := strings.Split(string(ev.Key), "/")
+		s = append(s, getServerList[len(getServerList)-1])
+	}
+	return s
 }

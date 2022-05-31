@@ -11,9 +11,7 @@ import (
 )
 
 //Deploy 用户及用户组(判断||新建)-下载安装包-解压-修改配置文件-安装校验(尝试启动，并进行健康检查，通过后关闭)
-//TODO：信息上送网关并入库
-//TODO：ajp port 暂不支持修改
-//TODO：shutdown port 暂不支持修改
+//TODO：缺少必要的判断逻辑，1、需求安装的服务器列表是否已注册进入etcd、并且saberlet的状态正常；2、服务器列表是否均属于声明的系统及其网络安全域
 func Deploy(m *commontools.Basest) (string, error) {
 	if m.DeployAction.Action != "Install" {
 		return "", fmt.Errorf("yaml文件为声明Tomcat的安装行为\n")

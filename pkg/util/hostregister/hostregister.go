@@ -5,14 +5,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path"
 	"sabre/pkg/config"
 	"sabre/pkg/dbload"
+	"sabre/pkg/sabstruct"
 	"sabre/pkg/sabstruct/res"
 	"sabre/pkg/util/commontools"
+	Ti "sabre/pkg/util/tomcat/install"
 	"sabre/pkg/yamlfmt"
 	"strings"
 )
+
+type Basest sabstruct.Config
 
 //RegInfoToDB 由 sabrectl 发起主机注册请求，再由sabrelet保存进入etcd，sabrelet本地缓存
 // etcd的key /hosts/erp/machine/app/hostname:res.Hosts
@@ -41,6 +46,42 @@ func RegInfoToDB(wr http.ResponseWriter, req *http.Request) {
 		_, _ = wr.Write([]byte(s))
 	}
 
+}
+
+//GetInfoToInstall 接收sabreschedule的调用，每台机器上都启动着sabrelet，由scheduled挨个调用下发部署指令
+func GetInfoToInstall(wr http.ResponseWriter, req *http.Request) {
+	insertDB := make(map[string]sabstruct.Config)
+	contentLength := req.ContentLength
+	body := make([]byte, contentLength)
+	req.Body.Read(body)
+	err := json.Unmarshal(body, &insertDB)
+	if err != nil {
+		http.Error(wr, err.Error(), http.StatusBadRequest)
+	}
+	for k, basestStruct := range insertDB {
+		_, err = Ti.Deploy((*commontools.Basest)(&basestStruct))
+		if err != nil {
+			fmt.Printf("%s\n", err)
+			os.Exit(-1)
+		}
+		for _, host := range basestStruct.DeployHost {
+			getServerList := strings.Split(host, "/")
+			basestStruct.DeployHostStatus[getServerList[len(getServerList)-1]] = true
+		}
+
+		resultJson, err := yamlfmt.PrintResultJson(basestStruct)
+		if err != nil {
+			http.Error(wr, err.Error(), http.StatusBadRequest)
+		}
+		setIntoDBErrOne := dbload.SetIntoDB(k, string(resultJson))
+		if setIntoDBErrOne != nil {
+			// 失败重试1次
+			setIntoDBErrTwo := dbload.SetIntoDB(k, string(resultJson))
+			if setIntoDBErrTwo != nil {
+				http.Error(wr, setIntoDBErrTwo.Error(), http.StatusBadRequest)
+			}
+		}
+	}
 }
 
 //KeyName 入库的key名称
@@ -107,4 +148,10 @@ func SetHttpReq(etcdKey string, etcdValue res.Hosts) (string, error) {
 		return "", fmt.Errorf("ReadAll failed, url: %s, reqBody: %s, err: %v", apiUrl, reqBody, err)
 	}
 	return fmt.Sprintf("Server %s registration succeeded", resFromServer), nil
+}
+
+//ReportHostSabreletStatus 周期性上报当前服务器的saberlet的状态
+//TODO：逻辑待补充
+func ReportHostSabreletStatus() {
+
 }

@@ -13,10 +13,21 @@ import (
 var Log *zap.SugaredLogger
 
 const (
-	outputDir = "./"
-	outPath   = "foot.log"
-	errPath   = "foot.err"
+	outputDir = "/var/log/"
+	scheduled = "scheduled.log"
+	//sabreapi   = "sabreapi.log"
 )
+
+//func InfoLogOutPath(n string) string {
+//	switch n {
+//	case "scheduled":
+//		return scheduled
+//	case "sabreapi":
+//		return sabreapi
+//	default:
+//		return "default"
+//	}
+//}
 
 func init() {
 	_, err := os.Stat(outputDir)
@@ -55,20 +66,20 @@ func init() {
 		return true
 	})
 
-	warnLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl >= zapcore.WarnLevel
-	})
+	//warnLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+	//	return lvl >= zapcore.WarnLevel
+	//})
 
 	// 获取 info、warn日志文件的io.Writer 抽象 getWriter() 在下方实现
 	infoHook_1 := os.Stdout
-	infoHook_2 := getWriter(outPath)
-	errorHook := getWriter(errPath)
+	infoHook_2 := getWriter(scheduled)
+	//errorHook := getWriter(errPath)
 
 	// 最后创建具体的Logger
 	core := zapcore.NewTee(
 		zapcore.NewCore(encoder, zapcore.AddSync(infoHook_1), infoLevel),
 		zapcore.NewCore(encoder, zapcore.AddSync(infoHook_2), infoLevel),
-		zapcore.NewCore(encoder, zapcore.AddSync(errorHook), warnLevel),
+		//zapcore.NewCore(encoder, zapcore.AddSync(errorHook), warnLevel),
 	)
 
 	// 需要传入 zap.AddCaller() 才会显示打日志点的文件名和行数, 有点小坑

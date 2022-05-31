@@ -30,6 +30,7 @@ package dbload
 import (
 	"context"
 	"fmt"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"strings"
@@ -130,7 +131,8 @@ func WatchFromDB(s string) {
 	}
 }
 
-func GetKeyWithPrefix(k string) ([]string, error) {
+//GetKeyWithPrefix 以k为前缀获取etcd中的key，即模糊查询etcd中所有符合k为前缀的kv
+func GetKeyWithPrefix(k string) ([]*mvccpb.KeyValue, error) {
 	cli, err := GetDBCli()
 	if err != nil {
 		return nil, fmt.Errorf("connect failed, %s\n", err)
@@ -143,12 +145,7 @@ func GetKeyWithPrefix(k string) ([]string, error) {
 
 		return nil, fmt.Errorf("get from etcd failed, err:%v\n", getKeyErr)
 	}
-	var s []string
-	for _, ev := range resp.Kvs {
-		fmt.Printf("%s:%s\n", ev.Key, ev.Value)
-		s = append(s, string(ev.Key))
-	}
-	return s, nil
+	return resp.Kvs, nil
 }
 
 func keySplit(t []byte) (string, error) {

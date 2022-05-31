@@ -51,9 +51,10 @@ type User struct {
 // Action，针对Tomcat 包含Install
 // Action，针对Jdk 包含Install，appInstall。含义是Install仅安装jdk并配置环境变量、 appInstall表示安装jdk、配置变量并且生成启动jar包的文件目录以及启动脚本
 type DeployAction struct {
-	Timer      string   `json:"timer,omitempty"` // 执行时间
-	Action     string   `json:"action"`
-	DeployHost []string `json:"deploy_host"`
+	Timer            string          `json:"timer,omitempty"` // 执行时间
+	Action           string          `json:"action"`
+	DeployHost       []string        `json:"deploy_host"`
+	DeployHostStatus map[string]bool `json:"deployHostStatus,omitempty"`
 	//Install   string    `json:"install"`         // 部署
 	//ReInstall string    `json:"re_install"`      // 重装
 	//Apply     string    `json:"apply"`           // 配置修改
