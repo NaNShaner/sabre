@@ -3,7 +3,7 @@ kind: Config
 metadata:
     namespace: ERP
     netarea: APP
-    appname: demo
+    appname: erp
 spec:
     midtype: Tomcat
     version: 7.0.78
@@ -22,7 +22,7 @@ spec:
             jdkappinstallpath: ""
             jdkstartupfile: ""
         tomcat:
-            javaopts: -server -Xms1024M -Xmx1024M -Xss512k -XX:PermSize=1024M -XX:MaxPermSize=1024M
+            javaopts: -server -Xms1024M -Xmx1024M -Xss512k
             listeningport: "8099"
             ajpport: "8009"
             ajprirectport: ""
@@ -30,5 +30,5 @@ spec:
     deployaction:
         action: Install
         deployhost:
-            - 127.0.0.1
-            - 127.0.0.2
+            - 192.168.3.182
+            - 192.168.3.58

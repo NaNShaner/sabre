@@ -6,8 +6,8 @@ import (
 	"os"
 	"sabre/pkg/apiserver"
 	"sabre/pkg/sabstruct"
+	"sabre/pkg/util/callsabrelet"
 	"sabre/pkg/util/commontools"
-	Ti "sabre/pkg/util/tomcat/install"
 	"sabre/pkg/yamlfmt"
 )
 
@@ -24,12 +24,20 @@ var cmdDeployTomcat = &cobra.Command{
 				fmt.Printf("%s\n", getYamlFmtErr)
 				os.Exit(-1)
 			}
+			u := (*commontools.Basest)(yamlFmt)
 			// TODO 便于调试后续删除
-			printResultJson, err := yamlfmt.PrintResultJson((*commontools.Basest)(yamlFmt))
+			printResultJson, err := yamlfmt.PrintResultJson(u)
 			if err != nil {
 				return
 			}
 			fmt.Printf("%s\n", printResultJson)
+
+			//判断yaml文件中期望部署的服务器是否属于当前namespace
+			CheckInstallServerBelongToNSErr := u.CheckInstallServerBelongToNS()
+			if CheckInstallServerBelongToNSErr != nil {
+				fmt.Printf("%s\n", CheckInstallServerBelongToNSErr)
+				os.Exit(-1)
+			}
 			// 信息入库
 			setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(yamlFmt))
 			if setInfoToDBErr != nil {
@@ -37,12 +45,15 @@ var cmdDeployTomcat = &cobra.Command{
 				os.Exit(-1)
 			}
 			fmt.Printf("Tomcat information warehousing succeeded，%s\n", setInfoToDB)
-			// 执行安装操作
-			_, err = Ti.Deploy((*commontools.Basest)(yamlFmt))
-			if err != nil {
-				fmt.Printf("%s\n", err)
-				os.Exit(-1)
-			}
+
+			//_, err = Ti.Deploy((*commontools.Basest)(yamlFmt))
+			//if err != nil {
+			//	fmt.Printf("%s\n", err)
+			//	os.Exit(-1)
+			//}
+
+			b := (*callsabrelet.Basest)(yamlFmt)
+			callsabrelet.CallFaceOfSabrelet(b, u.DeployHost)
 			fmt.Printf("tomcat install done\n")
 		}
 	},

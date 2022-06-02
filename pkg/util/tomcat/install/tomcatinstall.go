@@ -14,17 +14,21 @@ import (
 //TODO：缺少必要的判断逻辑，1、需求安装的服务器列表是否已注册进入etcd、并且saberlet的状态正常；2、服务器列表是否均属于声明的系统及其网络安全域
 func Deploy(m *commontools.Basest) (string, error) {
 	if m.DeployAction.Action != "Install" {
-		return "", fmt.Errorf("yaml文件为声明Tomcat的安装行为\n")
+		return "", fmt.Errorf("yaml文件为声明Tomcat的安装行为%s\n", m.DeployAction.Action)
+	}
+	localServerName, getLocalServerNameErr := commontools.GetLocalServerName()
+	if getLocalServerNameErr != nil {
+		return "", getLocalServerNameErr
 	}
 	unPackPath, err := m.InstallCommonStep()
 	if err != nil {
-		return "", fmt.Errorf("Deploy 步骤执行失败，%s", err)
+		return "", fmt.Errorf("server %s deploy 步骤执行失败，%s", localServerName, err)
 	}
 
 	// 如果用户未输入Tomcat的jvm参数，设置默认参数，默认参数来自/root/.sabrefig/config
 	defaultCf, defaultCfErr := config.GetConfigSet()
 	if defaultCfErr != nil {
-		return "", fmt.Errorf("获取服务器默认配置失败,%s", defaultCfErr)
+		return "", fmt.Errorf("failed to get the default configuration of server %s,%s", localServerName, defaultCfErr)
 	}
 	// 这里判断用户是否输入了jvm参数，如果用户没有输入，可以通过默认配置填充
 	if m.Spec.DefaultConfig.Jdk.Javaopts == "" {

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
-	"os"
 	"path"
 	"sabre/pkg/config"
 	"sabre/pkg/dbload"
@@ -15,6 +15,7 @@ import (
 	Ti "sabre/pkg/util/tomcat/install"
 	"sabre/pkg/yamlfmt"
 	"strings"
+	"time"
 )
 
 type Basest sabstruct.Config
@@ -50,24 +51,41 @@ func RegInfoToDB(wr http.ResponseWriter, req *http.Request) {
 
 //GetInfoToInstall 接收sabreschedule的调用，每台机器上都启动着sabrelet，由scheduled挨个调用下发部署指令
 func GetInfoToInstall(wr http.ResponseWriter, req *http.Request) {
-	insertDB := make(map[string]sabstruct.Config)
+	s := make(map[string]sabstruct.Config)
 	contentLength := req.ContentLength
 	body := make([]byte, contentLength)
 	req.Body.Read(body)
-	err := json.Unmarshal(body, &insertDB)
-	if err != nil {
-		http.Error(wr, err.Error(), http.StatusBadRequest)
+	jsonUnmarshalErr := json.Unmarshal(body, &s)
+	printResultJson, printResultJsonErr := yamlfmt.PrintResultJson(s)
+	if printResultJsonErr != nil {
+		fmt.Printf("saberlet err %s\n", printResultJson)
 	}
-	for k, basestStruct := range insertDB {
-		_, err = Ti.Deploy((*commontools.Basest)(&basestStruct))
-		if err != nil {
-			fmt.Printf("%s\n", err)
-			os.Exit(-1)
-		}
+	fmt.Printf("saberlet info %s\n", printResultJson)
+	if jsonUnmarshalErr != nil {
+		http.Error(wr, jsonUnmarshalErr.Error(), http.StatusBadRequest)
+	}
+loop:
+	for k, basestStruct := range s {
+		var localHostIp string
 		for _, host := range basestStruct.DeployHost {
-			getServerList := strings.Split(host, "/")
-			basestStruct.DeployHostStatus[getServerList[len(getServerList)-1]] = true
+
+			ip, _ := commontools.GetHostIP(net.ParseIP(host))
+			if ip {
+				localHostIp = host
+			}
 		}
+		fmt.Printf("saberlet localHostIp %s\n", localHostIp)
+
+		_, deployErr := Ti.Deploy((*commontools.Basest)(&basestStruct))
+		if deployErr != nil {
+			fmt.Printf("server %s  ,%s\n", localHostIp, deployErr)
+			wr.Write([]byte(fmt.Sprintf("server %s  ,%s\n", localHostIp, deployErr)))
+			break loop
+		}
+		//for _, host := range basestStruct.DeployHost {
+		//	getServerList := strings.Split(host, "/")
+		//	basestStruct.DeployHostStatus[getServerList[len(getServerList)-1]] = true
+		//}
 
 		resultJson, err := yamlfmt.PrintResultJson(basestStruct)
 		if err != nil {
@@ -75,7 +93,8 @@ func GetInfoToInstall(wr http.ResponseWriter, req *http.Request) {
 		}
 		setIntoDBErrOne := dbload.SetIntoDB(k, string(resultJson))
 		if setIntoDBErrOne != nil {
-			// 失败重试1次
+			// 失败等待1秒后重试1次
+			time.Sleep(time.Second)
 			setIntoDBErrTwo := dbload.SetIntoDB(k, string(resultJson))
 			if setIntoDBErrTwo != nil {
 				http.Error(wr, setIntoDBErrTwo.Error(), http.StatusBadRequest)
@@ -116,11 +135,11 @@ func ValueName(h res.HostRegister, ip, beloogto, area string) (res.Hosts, error)
 func SetHttpReq(etcdKey string, etcdValue res.Hosts) (string, error) {
 
 	apiServer, apiServerErr := config.GetLetServerUrl()
-	if apiServerErr != nil {
-		return "", apiServerErr
+	if apiServerErr != nil || apiServer == "" {
+		return "", fmt.Errorf("saberlet server address not found in configuration file %s", apiServerErr)
 	}
-
-	//fmt.Printf("k:%s \nv:+%v\n", etcdKey, etcdValue)
+	// TODO: 方便调试，后续删除
+	fmt.Printf("apiServer:%s \n", apiServer)
 	insertDB := make(map[string]res.Hosts)
 
 	insertDB[etcdKey] = etcdValue

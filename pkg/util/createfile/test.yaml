@@ -1,0 +1,33 @@
+apiversion: beta
+kind: Config
+server: http://126.1.1.1
+apiserver: http://127.0.0.1:8001/
+localletserver: http://127.0.0.1:18001/
+metadata:
+    namespace: default
+    netarea: ""
+    appname: ""
+spec:
+    midtype: ""
+    version: ""
+    installpath: ""
+    pkgdownloadpath: ""
+    midruntype: []
+    user:
+        name: ""
+        group: ""
+    defaultconfig:
+        jdk:
+            javaopts: ""
+            jdkappinstallpath: ""
+            jdkstartupfile: ""
+        tomcat:
+            javaopts: -server -Xms1024M -Xmx1024M -Xss512k
+            listeningport: "8099"
+            ajpport: "8009"
+            shutdownport: "8005"
+    deployaction:
+        timer: ""
+        action: ""
+        deployhost: []
+        deployhoststatus: {}

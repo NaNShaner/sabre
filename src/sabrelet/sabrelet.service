@@ -1,0 +1,13 @@
+[Unit]
+Description=Sabrelet server daemon
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/sabrelet
+KillMode=process
+Restart=on-failure
+RestartSec=42s
+
+[Install]
+WantedBy=multi-user.target

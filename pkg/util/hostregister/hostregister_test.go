@@ -7,6 +7,7 @@ func TestKeyName(t *testing.T) {
 	n := "erp"
 	a := "app"
 	h := "local"
+	i := "192.168.3.58"
 
-	t.Log(KeyName(n, h, a))
+	t.Log(KeyName(n, h, a, i))
 }

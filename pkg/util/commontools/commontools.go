@@ -54,6 +54,7 @@ type ExecCmd interface {
 
 type Install interface {
 	InstallCommonStep() (string, error)
+	CheckIP
 }
 
 type CheckIP interface {
@@ -66,7 +67,7 @@ func (u *Basest) GetDeployPkgFromUrl(pkgUrl string) (string, error) {
 	pkgPath := PkgLocalPathForLinux
 	fileName := path.Base(pkgUrl)
 	pkgBasPath := pkgPath + fileName
-	res, err := http.Get(pkgUrl)
+	resp, err := http.Get(pkgUrl)
 	if err != nil {
 		fmt.Printf("A error occurred! %s\n", err)
 		return "", err
@@ -76,9 +77,9 @@ func (u *Basest) GetDeployPkgFromUrl(pkgUrl string) (string, error) {
 		if err != nil {
 			return
 		}
-	}(res.Body)
+	}(resp.Body)
 	// 获得get请求响应的reader对象
-	reader := bufio.NewReaderSize(res.Body, 32*1024)
+	reader := bufio.NewReaderSize(resp.Body, 32*1024)
 
 	if IsFileExist(pkgBasPath) {
 		file, err := os.Create(pkgBasPath)
@@ -172,12 +173,15 @@ func (u *Basest) InstallCommonStep() (string, error) {
 
 //CheckInstallServerBelongToNS 解析yaml文件中 u.DeployHost 字段中的地址是否属于系统下的地址
 func (u *Basest) CheckInstallServerBelongToNS() error {
-	keyPrefix := "/" + res.ManageResourceTypes()[2]
+	keyPrefix := res.ManageResourceTypes()
 	resType := "/machine"
-	key := path.Join(keyPrefix, u.Namespace, resType, u.Netarea)
+	key := path.Join("/", keyPrefix[2], u.Namespace, resType, u.Netarea)
 	allAvailableServer, getErr := dbload.GetKeyWithPrefix(key)
 	if getErr != nil {
 		return getErr
+	}
+	for _, s := range GetKeyFromDB(allAvailableServer) {
+		fmt.Printf("etcd 中有%s\n", s)
 	}
 	for _, s := range u.DeployHost {
 		if !InMap(ConvertStrSlice2Map(GetKeyFromDB(allAvailableServer)), s) {
