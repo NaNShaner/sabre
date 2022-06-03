@@ -1,4 +1,4 @@
-package commontools
+package logscheduled
 
 import (
 	"fmt"
@@ -15,19 +15,7 @@ var Log *zap.SugaredLogger
 const (
 	outputDir = "/var/log/"
 	scheduled = "scheduled.log"
-	//sabreapi   = "sabreapi.log"
 )
-
-//func InfoLogOutPath(n string) string {
-//	switch n {
-//	case "scheduled":
-//		return scheduled
-//	case "sabreapi":
-//		return sabreapi
-//	default:
-//		return "default"
-//	}
-//}
 
 func init() {
 	_, err := os.Stat(outputDir)

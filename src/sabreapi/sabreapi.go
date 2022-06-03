@@ -6,10 +6,12 @@ import (
 	"log"
 	"net/http"
 	"sabre/pkg/apiserver"
+	"sabre/pkg/util/hostregister"
 )
 
 func main() {
 	http.HandleFunc("/midRegx/set", apiserver.SetToDB)
+	http.HandleFunc("/hostInfo/register", hostregister.RegInfoToDB)
 	http.HandleFunc("/midRegx/show", apiserver.ShowInfoFromDB)
 
 	cntxt := &daemon.Context{

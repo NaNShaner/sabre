@@ -33,6 +33,7 @@ import (
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	l "sabre/pkg/util/logbase/logscheduled"
 	"strings"
 	"time"
 )
@@ -51,10 +52,11 @@ var (
 func GetDBCli() (*clientv3.Client, error) {
 	cli, err := clientv3.New(clientv3.Config{
 		//Endpoints: []string{"124.71.219.53:2379"},
-		Endpoints:   []string{"192.126.3.111:2379"},
+		Endpoints:   []string{"192.168.3.111:2379"},
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
+		l.Log.Errorf("failed to get cli for etcd, %s\n", err)
 		return nil, err
 	}
 	return cli, err
@@ -93,7 +95,7 @@ func SetIntoDB(k, v string) error {
 func WatchFromDB(s string) {
 	cli, err := GetDBCli()
 	if err != nil {
-		fmt.Printf("connect failed, %s\n", err)
+		l.Log.Errorf("connect failed, %s\n", err)
 		return
 	}
 	defer cli.Close()
@@ -104,24 +106,24 @@ func WatchFromDB(s string) {
 		for wresp := range rch {
 			err = wresp.Err()
 			if err != nil {
-				fmt.Println(err)
+				l.Log.Errorf("etcd watch response err, %s\n", err)
 			}
 			for _, ev := range wresp.Events {
 				//TODO: 判断执行动作，发起调度指令
-				fmt.Printf("%s %q %q\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+				l.Log.Info("%s %q %q\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
 				keySplit, err := keySplit(ev.Kv.Key)
 				if err != nil {
 					return
 				}
 				switch {
 				case isMidType(keySplit):
-					fmt.Printf("isMidType: %s\n", ev.Kv.Key)
+					l.Log.Infof("isMidType: %s\n", ev.Kv.Key)
 					switch {
 					case isMidTypeOfTomcat(keySplit):
-						fmt.Printf("isMidTypeOfTomcat %s\n", ev.Kv.Key)
+						l.Log.Infof("isMidTypeOfTomcat %s\n", ev.Kv.Key)
 					}
 				case isMidHost(keySplit):
-					fmt.Printf("isMidHost: %s\n", ev.Kv.Key)
+					l.Log.Infof("isMidHost: %s\n", ev.Kv.Key)
 				default:
 					return
 				}

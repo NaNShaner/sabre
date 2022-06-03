@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/hostInfo/register", hostregister.RegInfoToDB)
 	http.HandleFunc("/hostInfo/Install", hostregister.GetInfoToInstall)
 	//TODO: WorkDir参数化
 	cntxt := &daemon.Context{
@@ -18,7 +17,7 @@ func main() {
 		LogFileName: "/var/log/sabrelet.log",
 		LogFilePerm: 0640,
 		Umask:       027,
-		Args:        []string{"[sabrelet]"},
+		Args:        []string{"sabrelet"},
 	}
 
 	d, err := cntxt.Reborn()

@@ -1,12 +1,11 @@
 package scheduled
 
 import (
-	"fmt"
 	"github.com/sevlyar/go-daemon"
-	"log"
 	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct/res"
 	"sabre/pkg/util/commontools"
+	l "sabre/pkg/util/logbase/logscheduled"
 )
 
 type SabreSchedule interface {
@@ -38,7 +37,7 @@ func Watch() {
 
 	d, err := cntxt.Reborn()
 	if err != nil {
-		log.Fatal("Unable to run: ", err)
+		l.Log.Fatal("Unable to run: ", err)
 	}
 	if d != nil {
 		return
@@ -48,7 +47,7 @@ func Watch() {
 	rs := res.Register()
 	for _, regx := range rs.ResRegx {
 		go dbload.WatchFromDB(regx)
-		fmt.Printf("Watch etcd key的名称为%s\n", regx)
+		l.Log.Infof("Watch etcd key的名称为%s\n", regx)
 	}
 	// 主goroutine堵塞
 	//sig := make(chan os.Signal, 2)

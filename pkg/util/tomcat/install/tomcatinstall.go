@@ -7,6 +7,7 @@ import (
 	"sabre/pkg/config"
 	"sabre/pkg/util/changefile"
 	"sabre/pkg/util/commontools"
+	"sabre/pkg/util/logbase/logscheduled"
 	"time"
 )
 
@@ -87,7 +88,7 @@ func GetTomcatHomePath(m *commontools.Basest) (string, error) {
 	}
 	for _, p := range InstallHomePath {
 		if p.IsDir() {
-			commontools.Log.Info(p.Name())
+			logscheduled.Log.Info(p.Name())
 			fmt.Printf("GetTomcatHomePath 目录文件%s\n", p.Name())
 			return p.Name(), nil
 		} else {

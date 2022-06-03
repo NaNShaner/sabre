@@ -134,7 +134,7 @@ func ValueName(h res.HostRegister, ip, beloogto, area string) (res.Hosts, error)
 //SetHttpReq 与API网关交互
 func SetHttpReq(etcdKey string, etcdValue res.Hosts) (string, error) {
 
-	apiServer, apiServerErr := config.GetLetServerUrl()
+	apiServer, apiServerErr := config.GetApiServerUrl()
 	if apiServerErr != nil || apiServer == "" {
 		return "", fmt.Errorf("saberlet server address not found in configuration file %s", apiServerErr)
 	}
