@@ -2,12 +2,11 @@ package scheduled
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
+	"github.com/sevlyar/go-daemon"
+	"log"
 	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct/res"
 	"sabre/pkg/util/commontools"
-	"syscall"
 )
 
 type SabreSchedule interface {
@@ -28,23 +27,23 @@ func Cron(m *commontools.Basest) (string, error) {
 
 //Watch 监控ETCD中资源状态变化，发起调度逻辑
 func Watch() {
-	//cntxt := &daemon.Context{
-	//	PidFileName: "/var/run/sabreschedule.pid",
-	//	PidFilePerm: 0644,
-	//	LogFileName: "/var/log/sabreschedule.log",
-	//	LogFilePerm: 0640,
-	//	Umask:       027,
-	//	Args:        []string{"[sabreschedule]"},
-	//}
-	//
-	//d, err := cntxt.Reborn()
-	//if err != nil {
-	//	log.Fatal("Unable to run: ", err)
-	//}
-	//if d != nil {
-	//	return
-	//}
-	//defer cntxt.Release()
+	cntxt := &daemon.Context{
+		PidFileName: "/var/run/sabreschedule.pid",
+		PidFilePerm: 0644,
+		LogFileName: "/var/log/sabreschedule.log",
+		LogFilePerm: 0640,
+		Umask:       027,
+		Args:        []string{"[sabreschedule]"},
+	}
+
+	d, err := cntxt.Reborn()
+	if err != nil {
+		log.Fatal("Unable to run: ", err)
+	}
+	if d != nil {
+		return
+	}
+	defer cntxt.Release()
 
 	rs := res.Register()
 	for _, regx := range rs.ResRegx {
@@ -52,7 +51,7 @@ func Watch() {
 		fmt.Printf("Watch etcd key的名称为%s\n", regx)
 	}
 	// 主goroutine堵塞
-	sig := make(chan os.Signal, 2)
-	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
-	<-sig
+	//sig := make(chan os.Signal, 2)
+	//signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
+	//<-sig
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/sevlyar/go-daemon"
 	"log"
 	"net/http"
 	"sabre/pkg/apiserver"
@@ -10,12 +11,31 @@ import (
 func main() {
 	http.HandleFunc("/midRegx/set", apiserver.SetToDB)
 	http.HandleFunc("/midRegx/show", apiserver.ShowInfoFromDB)
-	//r := NewRouter()
-	//r.Use(logger)
+
+	cntxt := &daemon.Context{
+		PidFileName: "/var/run/sabreapi.pid",
+		PidFilePerm: 0644,
+		LogFileName: "/var/log/sabreapi.log",
+		LogFilePerm: 0640,
+		Umask:       027,
+		Args:        []string{"[sabreapi]"},
+	}
+
+	d, err := cntxt.Reborn()
+	if err != nil {
+		log.Fatal("Unable to run: ", err)
+	}
+	if d != nil {
+		return
+	}
+	defer cntxt.Release()
+
+	log.Print("sabreapi daemon started.")
+
 	listenPort := "8081"
 	fmt.Printf("The listening port of the api server is %s\n", listenPort)
-	err := http.ListenAndServe(":"+listenPort, nil)
-	if err != nil {
+	httpListenAndServeErr := http.ListenAndServe(":"+listenPort, nil)
+	if httpListenAndServeErr != nil {
 		log.Fatal(err)
 	}
 }

@@ -1,0 +1,13 @@
+[Unit]
+Description=SabreAPI server daemon
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/sabreapi
+KillMode=process
+Restart=on-failure
+RestartSec=42s
+
+[Install]
+WantedBy=multi-user.target
