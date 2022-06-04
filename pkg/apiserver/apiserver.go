@@ -63,7 +63,7 @@ func HttpReq(u *Basest) (string, error) {
 
 	etcdKey := u.RegxEtcdKey()
 	etcdValue := u.RegxEtcValue()
-	fmt.Printf("HttpReq ==> k:%s \nv:+%v\n", etcdKey, etcdValue)
+	//fmt.Printf("HttpReq ==> k:%s \nv:+%v\n", etcdKey, etcdValue)
 	insertDB := make(map[string]Basest)
 	//dbInfo.Kname = etcdKey
 	//dbInfo.Vname = etcdValue
@@ -84,7 +84,6 @@ func HttpReq(u *Basest) (string, error) {
 	httpRsp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %s, err:%v", apiUrl, reqBody, err)
-
 	}
 	defer httpRsp.Body.Close()
 

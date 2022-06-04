@@ -53,7 +53,7 @@ func (u *Basest) CallSabrelet(s, host string) (string, error) {
 	}
 	reqBody := strings.NewReader(string(yml))
 	httpReq, httpReqErr := http.NewRequest("POST", s, reqBody)
-	fmt.Printf("请求sabrelet的地址为 %s, 请求报文%+v\n", s, reqBody)
+	//fmt.Printf("请求sabrelet的地址为 %s, 请求报文%+v\n", s, reqBody)
 	if httpReqErr != nil {
 		u.DeployHostStatus = append(h, map[string]bool{host: false})
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v", s, reqBody, httpReqErr)

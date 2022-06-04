@@ -139,7 +139,7 @@ func SetHttpReq(etcdKey string, etcdValue res.Hosts) (string, error) {
 		return "", fmt.Errorf("saberlet server address not found in configuration file %s", apiServerErr)
 	}
 	// TODO: 方便调试，后续删除
-	fmt.Printf("apiServer:%s \n", apiServer)
+	//fmt.Printf("apiServer:%s \n", apiServer)
 	insertDB := make(map[string]res.Hosts)
 
 	insertDB[etcdKey] = etcdValue

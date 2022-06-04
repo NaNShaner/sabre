@@ -26,11 +26,11 @@ var cmdDeployTomcat = &cobra.Command{
 			}
 			u := (*commontools.Basest)(yamlFmt)
 			// TODO 便于调试后续删除
-			printResultJson, err := yamlfmt.PrintResultJson(u)
-			if err != nil {
-				return
-			}
-			fmt.Printf("%s\n", printResultJson)
+			//printResultJson, err := yamlfmt.PrintResultJson(u)
+			//if err != nil {
+			//	return
+			//}
+			//fmt.Printf("%s\n", printResultJson)
 
 			//判断yaml文件中期望部署的服务器是否属于当前namespace
 			CheckInstallServerBelongToNSErr := u.CheckInstallServerBelongToNS()

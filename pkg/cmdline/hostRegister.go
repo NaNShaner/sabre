@@ -7,7 +7,6 @@ import (
 	"sabre/pkg/sabstruct/res"
 	"sabre/pkg/util/commontools"
 	"sabre/pkg/util/hostregister"
-	"sabre/pkg/yamlfmt"
 )
 
 var namespace string
@@ -34,17 +33,17 @@ var cmdHostRegister = &cobra.Command{
 			}
 			v := make(map[string]res.Hosts)
 			v[kName] = valueName
-			json, err := yamlfmt.PrintResultJson(v)
-			if err != nil {
-				return
-			}
-			fmt.Printf("%s\n", json)
-			setHttpReq, setHttpReqErr := hostregister.SetHttpReq(kName, valueName)
+			//json, err := yamlfmt.PrintResultJson(v)
+			//if err != nil {
+			//	return
+			//}
+			//fmt.Printf("%s\n", json)
+			reqResp, setHttpReqErr := hostregister.SetHttpReq(kName, valueName)
 			if setHttpReqErr != nil {
 				fmt.Printf("请求sabrelet 失败,%s\n", setHttpReqErr)
 				os.Exit(-1)
 			}
-			fmt.Printf("%s\n", setHttpReq)
+			fmt.Printf("%s\n", reqResp)
 
 		}
 	},

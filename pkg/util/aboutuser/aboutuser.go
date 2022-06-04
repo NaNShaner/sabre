@@ -50,7 +50,7 @@ func IsUserGroupExist(uname user.User) (bool, error) {
 func GetUserHomeDir(uname string) (string, error) {
 	userExist, err := user.Lookup(uname)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	return userExist.HomeDir, nil
 }

@@ -180,9 +180,9 @@ func (u *Basest) CheckInstallServerBelongToNS() error {
 	if getErr != nil {
 		return getErr
 	}
-	for _, s := range GetKeyFromDB(allAvailableServer) {
-		fmt.Printf("etcd 中有%s\n", s)
-	}
+	//for _, s := range GetKeyFromDB(allAvailableServer) {
+	//	fmt.Printf("etcd 中有%s\n", s)
+	//}
 	for _, s := range u.DeployHost {
 		if !InMap(ConvertStrSlice2Map(GetKeyFromDB(allAvailableServer)), s) {
 			return fmt.Errorf("host %s does not belong to %s system", s, u.Namespace)

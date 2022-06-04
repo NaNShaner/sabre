@@ -72,7 +72,7 @@ func SetIntoDB(k, v string) error {
 	defer cli.Close()
 
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(30))
-	resp, err := cli.Put(context.TODO(), k, v)
+	_, err = cli.Put(context.TODO(), k, v)
 
 	if err != nil {
 		switch err {
@@ -86,7 +86,7 @@ func SetIntoDB(k, v string) error {
 			return fmt.Errorf("bad cluster endpoints, which are not etcd servers: %v\n", err)
 		}
 	}
-	fmt.Printf("%+v\n", *resp)
+	//fmt.Printf("%+v\n", *resp)
 	return nil
 
 }
