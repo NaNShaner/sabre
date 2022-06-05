@@ -112,7 +112,7 @@ loop:
 func KeyName(n, h, a, i string) string {
 	regx := "/hosts"
 	resType := "/machine"
-	return path.Join(regx, n, resType, a, h, i)
+	return path.Join(regx, strings.ToUpper(n), resType, strings.ToUpper(a), h, i)
 }
 
 //ValueName 入库的value

@@ -1,6 +1,8 @@
 package cmdline
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+)
 
 var cmdCreate = &cobra.Command{
 	Use:     "create [install or deploy middleware resources]",

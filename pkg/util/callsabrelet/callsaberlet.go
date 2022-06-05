@@ -41,21 +41,20 @@ func (u *Basest) CallSabreletByEachHost(s []string) {
 //s 为每台计算节点上的saberlet的监听地址
 //host 计算节点的ip地址
 func (u *Basest) CallSabrelet(s, host string) (string, error) {
-	var h []map[string]bool
 	insertDB := make(map[string]Basest)
-
-	key := "/mid/ERP/Tomcat"
+	// /mid/ERP/Tomcat
+	key := "/mid" + u.Namespace + "/" + u.Midtype
 	insertDB[key] = *u
 	yml, ymlErr := yamlfmt.PrintResultJson(&insertDB)
 	if ymlErr != nil {
-		u.DeployHostStatus = append(h, map[string]bool{host: false})
+		u.DeployHostStatus = append(u.DeployHostStatus, map[string]bool{host: false})
 		return "", fmt.Errorf("ymal文件格式化失败, %s\n", ymlErr)
 	}
 	reqBody := strings.NewReader(string(yml))
 	httpReq, httpReqErr := http.NewRequest("POST", s, reqBody)
 	//fmt.Printf("请求sabrelet的地址为 %s, 请求报文%+v\n", s, reqBody)
 	if httpReqErr != nil {
-		u.DeployHostStatus = append(h, map[string]bool{host: false})
+		u.DeployHostStatus = append(u.DeployHostStatus, map[string]bool{host: false})
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v", s, reqBody, httpReqErr)
 
 	}
@@ -64,7 +63,7 @@ func (u *Basest) CallSabrelet(s, host string) (string, error) {
 	// DO: HTTP请求
 	httpRsp, httpRspErr := http.DefaultClient.Do(httpReq)
 	if httpRspErr != nil {
-		u.DeployHostStatus = append(h, map[string]bool{host: false})
+		u.DeployHostStatus = append(u.DeployHostStatus, map[string]bool{host: false})
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v", s, reqBody, httpRspErr)
 	}
 	defer httpRsp.Body.Close()
@@ -72,10 +71,10 @@ func (u *Basest) CallSabrelet(s, host string) (string, error) {
 	// Read: HTTP结果
 	rspBody, rspBodyErr := ioutil.ReadAll(httpRsp.Body)
 	if rspBodyErr != nil {
-		u.DeployHostStatus = append(h, map[string]bool{host: false})
+		u.DeployHostStatus = append(u.DeployHostStatus, map[string]bool{host: false})
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v, response:%s", s, reqBody, rspBodyErr, string(rspBody))
 	}
-	u.DeployHostStatus = append(h, map[string]bool{host: true})
+	u.DeployHostStatus = append(u.DeployHostStatus, map[string]bool{host: true})
 	u.ResolveCallSabreletResponse(u)
 	return string(rspBody), nil
 }
@@ -94,6 +93,7 @@ func (u *Basest) ResolveCallSabreletResponse(yml *Basest) {
 	fmt.Printf("%s install information Update succeeded，%s\n", u.Midtype, setInfoToDB)
 }
 
+//CallFaceOfSabrelet 调用每台机器上的sabrelet
 func CallFaceOfSabrelet(h CallSchedule, s []string) {
 	h.CallSabreletByEachHost(s)
 }
