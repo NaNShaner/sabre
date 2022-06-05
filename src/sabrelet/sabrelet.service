@@ -1,13 +1,13 @@
 [Unit]
-Description=Sabrelet server daemon
+Description=sabrelet: The sabre Node Agent
+Wants=network-online.target
 After=network.target
 
 [Service]
-Type=forking
 ExecStart=/usr/sbin/sabrelet
-KillMode=process
-Restart=on-failure
-RestartSec=42s
+Restart=always
+StartLimitInterval=0
+RestartSec=12s
 
 [Install]
 WantedBy=multi-user.target

@@ -9,19 +9,13 @@ import (
 	"sabre/pkg/util/hostregister"
 )
 
-//### 例如：获取erp系统的下的demo工程部署在哪些机器的Tomcat中
-//key :/mid/ERP/Tomcat/{projectName}/{hostname/ipaddr}
-//sabrectl get mid -t tomcat -a app -n erp
-
-//输出：
-//namespace	host		midType	projectName	port	version	monitor running	runningTime
-//MNPP		127.0.0.1 	Tomcat 	demo		8099	7.0.78 	True	True	10d
-//MNPP		127.0.0.2 	Tomcat 	demo		8099	7.0.78 	True	True	10d
+var ns string
+var netArea string
 
 var cmdGetResPrint = &cobra.Command{
-	Use:   "hosted [server ipaddr]",
-	Short: "Register host to platform",
-	Args:  cobra.MinimumNArgs(0),
+	Use:   "get [resource information]",
+	Short: "Obtain resource information from the platform for presentation",
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// 发起请求主机注册请求给到saberlet
 		var h res.Hosts
@@ -31,8 +25,8 @@ var cmdGetResPrint = &cobra.Command{
 				fmt.Println(getHostNameErr)
 				os.Exit(-1)
 			}
-			kName := hostregister.KeyName(namespace, hostName, area, f)
-			valueName, err := hostregister.ValueName(&h, f, namespace, area)
+			kName := hostregister.KeyName(ns, hostName, netArea, f)
+			valueName, err := hostregister.ValueName(&h, f, ns, netArea)
 			if err != nil {
 				fmt.Printf("%s\n", err)
 				os.Exit(-1)
@@ -63,15 +57,11 @@ var cmdGetResPrint = &cobra.Command{
 }
 
 func init() {
-	cmdGetResPrint.Flags().StringVarP(&namespace, "namespace", "n", "", "主机所属系统简称")
-	cmdGetResPrint.Flags().StringVarP(&area, "area", "a", "", "主机所属网络安全域")
+	cmdGetResPrint.Flags().StringVarP(&ns, "namespace", "n", "", "主机所属系统简称")
+	cmdGetResPrint.Flags().StringVarP(&netArea, "area", "a", "", "主机所属网络安全域")
 	namespaceErr := cmdGetResPrint.MarkFlagRequired("namespace")
 	if namespaceErr != nil {
 		fmt.Printf("%s，请输入-n 或者--namespace 输入", namespaceErr)
-	}
-	areaErr := cmdHostRegister.MarkFlagRequired("area")
-	if areaErr != nil {
-		fmt.Printf("%s，请输入-a 或者--area 输入", areaErr)
 	}
 	AddCommand(cmdGetResPrint)
 }

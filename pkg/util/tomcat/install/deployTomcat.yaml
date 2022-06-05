@@ -1,14 +1,13 @@
 apiversion: beta
 kind: Config
 metadata:
-    namespace: ERP
-    netarea: APP
-    appname: erp
+    namespace: OICQ
+    netarea: WEB
+    appname: cons
 spec:
     midtype: Tomcat
-    version: 7.0.78
-    port: "8099"
-    installpath: /u01/app
+    version: 7.0.75
+    installpath: /u02/app
     pkgdownloadpath: http://124.71.219.53:8001/uploads/uploads/2022/05/07/apache-tomcat-7.0.75.tar.gz
     midruntype:
         - cluster
@@ -23,10 +22,9 @@ spec:
             jdkstartupfile: ""
         tomcat:
             javaopts: -server -Xms1024M -Xmx1024M -Xss512k
-            listeningport: "8099"
-            ajpport: "8009"
-            ajprirectport: ""
-            shutdownport: "8005"
+            listeningport: "18099"
+            ajpport: "18009"
+            shutdownport: "18005"
     deployaction:
         action: Install
         deployhost:
