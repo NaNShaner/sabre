@@ -1,7 +1,9 @@
 package tomcatinstall
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"sabre/pkg/apiserver"
 	"sabre/pkg/sabstruct"
 	"sabre/pkg/util/commontools"
@@ -41,4 +43,14 @@ func TestTomcatInstall(t *testing.T) {
 	//for _, file := range InstallHomePath {
 	//	fmt.Println(file.Name())
 	//}
+}
+
+func TestConfig_AddNowTime(t *testing.T) {
+	var s commontools.Basest
+	s.AddNowTime()
+	data, err := json.MarshalIndent(s, "", "    ")
+	if err != nil {
+		log.Fatalf("JSON marshaling failed: %s", err)
+	}
+	t.Log(string(data))
 }

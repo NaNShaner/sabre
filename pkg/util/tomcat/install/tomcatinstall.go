@@ -60,6 +60,7 @@ func Deploy(m *commontools.Basest) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	//TODO 方便调试，后续删除
 	fmt.Printf("命令执行情况%s", startMiddleware)
 
 	return fmt.Sprintf("%s delopy done\n", m.Midtype), nil

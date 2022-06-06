@@ -1,9 +1,5 @@
 package sabstruct
 
-import (
-	"time"
-)
-
 // Config 平台配置
 // Kind 资源类型 中间件、网络、基础设施
 //	Deployment:资源类型	config:配置文件
@@ -51,10 +47,10 @@ type User struct {
 // Action，针对Tomcat 包含Install
 // Action，针对Jdk 包含Install，appInstall。含义是Install仅安装jdk并配置环境变量、 appInstall表示安装jdk、配置变量并且生成启动jar包的文件目录以及启动脚本
 type DeployAction struct {
-	Timer            string            `json:"timer,omitempty"` // 执行时间
-	Action           string            `json:"action"`
-	DeployHost       []string          `json:"deploy_host"`
-	DeployHostStatus []map[string]bool `json:"deployHostStatus,omitempty"`
+	Timer            string                     `json:"timer,omitempty"` // 执行时间
+	Action           string                     `json:"action"`
+	DeployHost       []string                   `json:"deploy_host"`
+	DeployHostStatus []map[string]RunTimeStatus `json:"deployHostStatus,omitempty"`
 	//Install   string    `json:"install"`         // 部署
 	//ReInstall string    `json:"re_install"`      // 重装
 	//Apply     string    `json:"apply"`           // 配置修改
@@ -62,6 +58,14 @@ type DeployAction struct {
 	//Start     string    `json:"start"`           // 启动
 	//Stop      string    `json:"stop"`            // 停止
 	//Restop    string    `json:"restop"`          // 重启
+}
+
+//RunTimeStatus 描述中间件运行态。
+//TODO 逻辑待补充
+type RunTimeStatus struct {
+	//RunStatus 中间件资源当前是否运行正常，由sabrelet定时上报
+	RunStatus bool
+	//
 }
 
 // Jdk 在~/.sabrefig/config 文件的默认配置
@@ -84,16 +88,4 @@ type Tomcat struct {
 type DefaultConfig struct {
 	Jdk    `json:"jdk,omitempty"`
 	Tomcat `json:"tomcat,omitempty"`
-}
-
-//IsZero 校验必填字段
-func (n *Config) IsZero() bool {
-	return n.Kind == "" && n.ApiVersion == "" && n.Metadata == Metadata{}
-}
-
-func (n *Config) AddNowTime() *Config {
-	var cstSh, _ = time.LoadLocation("Asia/Shanghai") //上海
-	t := time.Now().In(cstSh).Format("2006-01-02 15:04:05.1234")
-	n.Timer = t
-	return n
 }

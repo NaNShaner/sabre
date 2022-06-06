@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sabre/pkg/apiserver"
 	"sabre/pkg/sabstruct"
+	"sabre/pkg/util/commontools"
 	"sabre/pkg/yamlfmt"
 	"strings"
 	"time"
@@ -22,6 +23,16 @@ type ReturnMsg struct {
 
 type CallSchedule interface {
 	CallSabreletByEachHost(s []string)
+}
+
+type AddNowTime interface {
+	AddNowTimeByEachHost() *Basest
+}
+
+func (u *Basest) AddNowTimeByEachHost() *Basest {
+	getPoint := (*commontools.Basest)(u)
+	getPoint.AddNowTime()
+	return (*Basest)(getPoint)
 }
 
 //CallSabreletByEachHost 在由commontools.CheckInstallServerBelongToNS()确认机器所属正常后，由该函数调用Sabrelet
@@ -81,7 +92,8 @@ func (u *Basest) CallSabrelet(s, host string) (string, error) {
 
 //ResolveCallSabreletResponse 处理sabrelet的返回结果，并更新etcd
 func (u *Basest) ResolveCallSabreletResponse(yml *Basest) {
-
+	// 添加当前时间
+	u.AddNowTimeByEachHost()
 	setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(yml))
 	if setInfoToDBErr != nil {
 		// 调用失败1秒后，retry 1次

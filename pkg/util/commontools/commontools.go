@@ -191,6 +191,19 @@ func (u *Basest) CheckInstallServerBelongToNS() error {
 	return nil
 }
 
+//IsZero 校验必填字段
+func (u *Basest) IsZero() bool {
+	return u.Kind == "" && u.ApiVersion == "" && u.Metadata == sabstruct.Metadata{}
+}
+
+//AddNowTime 添加默认时间
+func (u *Basest) AddNowTime() *Basest {
+	var cstSh, _ = time.LoadLocation("Asia/Shanghai") //上海
+	t := time.Now().In(cstSh).Format("2006-01-02 15:04:05.1234")
+	u.Timer = t
+	return u
+}
+
 //SetInfoToDB 请求API网关，信息入库
 //func (u *Basest) SetInfoToDB() (string, error) {
 //	setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(u))
