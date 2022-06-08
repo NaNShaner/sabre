@@ -31,8 +31,8 @@ type AddNowTime interface {
 
 func (u *Basest) AddNowTimeByEachHost() *Basest {
 	getPoint := (*commontools.Basest)(u)
-	getPoint.AddNowTime()
-	return (*Basest)(getPoint)
+	u.Timer = getPoint.AddNowTime()
+	return u
 }
 
 //CallSabreletByEachHost 在由commontools.CheckInstallServerBelongToNS()确认机器所属正常后，由该函数调用Sabrelet
@@ -58,14 +58,14 @@ func (u *Basest) CallSabrelet(s, host string) (string, error) {
 	insertDB[key] = *u
 	yml, ymlErr := yamlfmt.PrintResultJson(&insertDB)
 	if ymlErr != nil {
-		u.DeployHostStatus = append(u.DeployHostStatus, map[string]bool{host: false})
+		u.DeployHostStatus = append(u.DeployHostStatus, u.GetStatusReport(host, false))
 		return "", fmt.Errorf("ymal文件格式化失败, %s\n", ymlErr)
 	}
 	reqBody := strings.NewReader(string(yml))
 	httpReq, httpReqErr := http.NewRequest("POST", s, reqBody)
 	//fmt.Printf("请求sabrelet的地址为 %s, 请求报文%+v\n", s, reqBody)
 	if httpReqErr != nil {
-		u.DeployHostStatus = append(u.DeployHostStatus, map[string]bool{host: false})
+		u.DeployHostStatus = append(u.DeployHostStatus, u.GetStatusReport(host, false))
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v", s, reqBody, httpReqErr)
 
 	}
@@ -74,7 +74,7 @@ func (u *Basest) CallSabrelet(s, host string) (string, error) {
 	// DO: HTTP请求
 	httpRsp, httpRspErr := http.DefaultClient.Do(httpReq)
 	if httpRspErr != nil {
-		u.DeployHostStatus = append(u.DeployHostStatus, map[string]bool{host: false})
+		u.DeployHostStatus = append(u.DeployHostStatus, u.GetStatusReport(host, false))
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v", s, reqBody, httpRspErr)
 	}
 	defer httpRsp.Body.Close()
@@ -82,10 +82,10 @@ func (u *Basest) CallSabrelet(s, host string) (string, error) {
 	// Read: HTTP结果
 	rspBody, rspBodyErr := ioutil.ReadAll(httpRsp.Body)
 	if rspBodyErr != nil {
-		u.DeployHostStatus = append(u.DeployHostStatus, map[string]bool{host: false})
+		u.DeployHostStatus = append(u.DeployHostStatus, u.GetStatusReport(host, false))
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v, response:%s", s, reqBody, rspBodyErr, string(rspBody))
 	}
-	u.DeployHostStatus = append(u.DeployHostStatus, map[string]bool{host: true})
+	u.DeployHostStatus = append(u.DeployHostStatus, u.GetStatusReport(host, true))
 	u.ResolveCallSabreletResponse(u)
 	return string(rspBody), nil
 }
@@ -103,6 +103,16 @@ func (u *Basest) ResolveCallSabreletResponse(yml *Basest) {
 		// TODO 如果retry失败如何处理
 	}
 	fmt.Printf("%s install information Update succeeded，%s\n", u.Midtype, setInfoToDB)
+}
+
+//GetStatusReport 上报服务器状态
+func (u *Basest) GetStatusReport(host string, hostStatus bool) map[string]sabstruct.RunTimeStatus {
+	var s sabstruct.RunTimeStatus
+	var status map[string]sabstruct.RunTimeStatus
+	s.StatusReportTimer = (*commontools.Basest)(u).AddNowTime()
+	s.RunStatus = hostStatus
+	status[host] = s
+	return status
 }
 
 //CallFaceOfSabrelet 调用每台机器上的sabrelet

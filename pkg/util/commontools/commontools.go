@@ -197,11 +197,10 @@ func (u *Basest) IsZero() bool {
 }
 
 //AddNowTime 添加默认时间
-func (u *Basest) AddNowTime() *Basest {
+func (u *Basest) AddNowTime() string {
 	var cstSh, _ = time.LoadLocation("Asia/Shanghai") //上海
 	t := time.Now().In(cstSh).Format("2006-01-02 15:04:05.1234")
-	u.Timer = t
-	return u
+	return t
 }
 
 //SetInfoToDB 请求API网关，信息入库

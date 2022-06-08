@@ -64,8 +64,11 @@ type DeployAction struct {
 //TODO 逻辑待补充
 type RunTimeStatus struct {
 	//RunStatus 中间件资源当前是否运行正常，由sabrelet定时上报
-	RunStatus bool
-	//
+	RunStatus bool `json:"run_status,omitempty"`
+	//StatusReportTimer 记录上报状态的时间
+	StatusReportTimer string `json:"status_report_timer,omitempty"`
+	//RunningDays 记录上报状态的时间
+	RunningDays int `json:"running_days,omitempty"`
 }
 
 // Jdk 在~/.sabrefig/config 文件的默认配置
