@@ -31,7 +31,7 @@ func TestSetIntoDB(t *testing.T) {
 
 func TestGetKeyWithPrefix(t *testing.T) {
 	k := "/hosts/erp/machine/app/"
-	prefix, err := GetKeyWithPrefix(k)
+	prefix, err := GetKeyFromETCD(k, true)
 	if err != nil {
 		return
 	}

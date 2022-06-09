@@ -1,10 +1,13 @@
 package callsabrelet
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/golang-module/carbon/v2"
 	"io/ioutil"
 	"net/http"
 	"sabre/pkg/apiserver"
+	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct"
 	"sabre/pkg/util/commontools"
 	"sabre/pkg/yamlfmt"
@@ -113,6 +116,35 @@ func (u *Basest) GetStatusReport(host string, hostStatus bool) map[string]sabstr
 	s.RunStatus = hostStatus
 	status[host] = s
 	return status
+}
+
+//CalculateRunningDay 获取服务器中中间件的运行时间
+//host 为当前主机的ip地址
+func (u *Basest) CalculateRunningDay(host string) (int, error) {
+	key := "/mid" + u.Namespace + "/" + u.Midtype
+	typeInfoFromDB, getErr := dbload.GetKeyFromETCD(key, false)
+	if getErr != nil {
+		return 0, getErr
+	}
+	// 从etcd中获取中间件的信息
+	for _, v := range typeInfoFromDB {
+		err := json.Unmarshal(v.Value, u)
+		if err != nil {
+			return 0, err
+		}
+		// 获取DeployHostStatus 判断当前主机的信息
+		for _, hStruct := range u.DeployHostStatus {
+			for h, hInfo := range hStruct {
+				// 判断为当前主机信息，将库中的时间数据和当前时间对比
+				if h == host {
+					runningDays := carbon.Parse((*commontools.Basest)(u).AddNowTime()).DiffInDays(carbon.Parse(hInfo.StatusReportTimer))
+					return int(runningDays), nil
+				}
+			}
+		}
+
+	}
+	return 0, fmt.Errorf("failed to get runtime\n")
 }
 
 //CallFaceOfSabrelet 调用每台机器上的sabrelet

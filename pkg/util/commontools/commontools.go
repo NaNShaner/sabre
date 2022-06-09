@@ -176,7 +176,7 @@ func (u *Basest) CheckInstallServerBelongToNS() error {
 	keyPrefix := res.ManageResourceTypes()
 	resType := "/machine"
 	key := path.Join("/", keyPrefix[2], u.Namespace, resType, u.Netarea)
-	allAvailableServer, getErr := dbload.GetKeyWithPrefix(key)
+	allAvailableServer, getErr := dbload.GetKeyFromETCD(key, true)
 	if getErr != nil {
 		return getErr
 	}

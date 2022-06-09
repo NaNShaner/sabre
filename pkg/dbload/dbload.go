@@ -133,21 +133,32 @@ func WatchFromDB(s string) {
 	}
 }
 
-//GetKeyWithPrefix 以k为前缀获取etcd中的key，即模糊查询etcd中所有符合k为前缀的kv
-func GetKeyWithPrefix(k string) ([]*mvccpb.KeyValue, error) {
+//GetKeyFromETCD 以k为前缀获取etcd中的key
+//withPrefix 为true时即模糊查询etcd中所有符合k为前缀的kv，false表示精确匹配
+func GetKeyFromETCD(k string, withPrefix bool) ([]*mvccpb.KeyValue, error) {
 	cli, err := GetDBCli()
 	if err != nil {
 		return nil, fmt.Errorf("connect failed, %s\n", err)
 	}
 	defer cli.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	resp, getKeyErr := cli.Get(ctx, k, clientv3.WithPrefix())
-	cancel()
-	if getKeyErr != nil {
+	if withPrefix {
+		resp, getKeyErr := cli.Get(ctx, k, clientv3.WithPrefix())
+		cancel()
+		if getKeyErr != nil {
 
-		return nil, fmt.Errorf("get from etcd failed, err:%v\n", getKeyErr)
+			return nil, fmt.Errorf("get from etcd failed, err:%v\n", getKeyErr)
+		}
+		return resp.Kvs, nil
+	} else {
+		resp, getKeyErr := cli.Get(ctx, k)
+		cancel()
+		if getKeyErr != nil {
+
+			return nil, fmt.Errorf("get from etcd failed, err:%v\n", getKeyErr)
+		}
+		return resp.Kvs, nil
 	}
-	return resp.Kvs, nil
 }
 
 func keySplit(t []byte) (string, error) {
