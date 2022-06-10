@@ -2,6 +2,8 @@ package getSomethingToPrint
 
 import (
 	"encoding/json"
+	"fmt"
+	"path"
 	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct"
 )
@@ -19,6 +21,7 @@ type OutPutInfo struct {
 	Namespace   string
 	Host        string
 	MidType     string
+	NetArea     string
 	AppName     string
 	Port        string
 	MidVersion  string
@@ -27,8 +30,32 @@ type OutPutInfo struct {
 	RunningTime string
 }
 
-func (o OutPutInfo) PrintFmt() {
+type CmdArgs struct {
+	ResType string
+	OutPutInfo
+}
 
+var (
+	PrintHeader = "%-6s %-15s %s %4s %4s %7s %3s %s %4s\n"
+	PrintLine   = "%-9s %-15s %6s %5s %11s %5s %5t %7t %6s\n"
+)
+
+func (o OutPutInfo) PrintFmt(c CmdArgs) {
+	dbKey, err := FmtDBKey(c)
+	if err != nil {
+
+	}
+	willOutPutReslut := UseKeyGetInfoFromDB(dbKey)
+	fmt.Printf(PrintHeader, "namespace", "host", "midType", "projectName", "port", "version", "monitor", "running", "runningTime")
+	for _, info := range willOutPutReslut {
+		fmt.Printf(PrintLine, info.Namespace, info.Host, info.MidType, info.AppName, info.Port, info.MidVersion, info.Monitor, info.Running, info.RunningTime)
+	}
+}
+
+func FmtDBKey(c CmdArgs) (string, error) {
+	splitSep := "/"
+
+	return path.Join(splitSep, c.ResType, c.Namespace, c.MidType, c.NetArea), nil
 }
 
 func UseKeyGetInfoFromDB(s string) []OutPutInfo {
