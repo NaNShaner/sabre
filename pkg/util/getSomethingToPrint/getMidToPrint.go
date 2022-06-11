@@ -18,6 +18,7 @@ import (
 //MNPP		127.0.0.2 	Tomcat 	demo		8099	7.0.78 	True	True	10d
 
 type OutPutInfo struct {
+	ResType     string
 	Namespace   string
 	Host        string
 	MidType     string
@@ -30,21 +31,17 @@ type OutPutInfo struct {
 	RunningTime string
 }
 
-type CmdArgs struct {
-	ResType string
-	OutPutInfo
-}
-
 var (
 	PrintHeader = "%-6s %-15s %s %4s %4s %7s %3s %s %4s\n"
 	PrintLine   = "%-9s %-15s %6s %5s %11s %5s %5t %7t %6s\n"
 )
 
-func PrintFmt(c CmdArgs) error {
-	dbKey, err := FmtDBKey(c)
-	if err != nil {
-		return err
-	}
+//PrintFmt 接收命令行参数,将etcd中的数据格式化后输出到终端
+//r 资源类型，例如 mid
+//n 系统简称，例如 ERP
+//m 资源种类，例如 Tomcat
+func PrintFmt(r, n, m string) error {
+	dbKey := path.Join("/", r, n, m)
 	willOutPutResult, getOutPutResultErr := UseKeyGetInfoFromDB(dbKey)
 	if getOutPutResultErr != nil {
 		return getOutPutResultErr
@@ -56,12 +53,7 @@ func PrintFmt(c CmdArgs) error {
 	return nil
 }
 
-func FmtDBKey(c CmdArgs) (string, error) {
-	splitSep := "/"
-
-	return path.Join(splitSep, c.ResType, c.Namespace, c.MidType, c.NetArea), nil
-}
-
+//UseKeyGetInfoFromDB 接收ETCD中的数据并构造需要输出的结构体
 func UseKeyGetInfoFromDB(s string) ([]OutPutInfo, error) {
 	var O OutPutInfo
 	sab := &sabstruct.Config{}
@@ -96,40 +88,4 @@ func UseKeyGetInfoFromDB(s string) ([]OutPutInfo, error) {
 
 	}
 	return getOutPutInfo, nil
-}
-
-//GetInfoFromCmdline 接收命令行参数
-//r 资源类型，例如 mid
-//n 系统简称，例如 ERP
-//m 资源种类，例如 Tomcat
-func GetInfoFromCmdline(r, n, m string) (CmdArgs, error) {
-	var c CmdArgs
-	var s OutPutInfo
-	sab := &sabstruct.Config{}
-
-	key := path.Join("/", r, n, m)
-	useKeyGetInfoFromDB, getErr := dbload.GetKeyFromETCD(key, false)
-	if getErr != nil {
-
-	}
-	for _, kv := range useKeyGetInfoFromDB {
-		err := json.Unmarshal(kv.Value, sab)
-		if err != nil {
-			return CmdArgs{}, err
-		}
-	}
-	s.Namespace = sab.Namespace
-	s.MidType = sab.Midtype
-	s.AppName = sab.Appname
-	s.Port = sab.ListeningPort
-	s.MidVersion = sab.Version
-	s.Monitor = true
-	s.Running = true
-	s.RunningTime = "10d"
-
-	c.ResType = "mid"
-	c.OutPutInfo = s
-
-	return c, nil
-
 }

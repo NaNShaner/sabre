@@ -18,11 +18,7 @@ var cmdGetResPrint = &cobra.Command{
 	Args:  cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 
-		getInfoFromCmdline, err := getSomethingToPrint.GetInfoFromCmdline(rType, ns, rKind)
-		if err != nil {
-			return
-		}
-		getInfoFromCmdlineErr := getSomethingToPrint.PrintFmt(getInfoFromCmdline)
+		getInfoFromCmdlineErr := getSomethingToPrint.PrintFmt(rType, ns, rKind)
 		if getInfoFromCmdlineErr != nil {
 			fmt.Printf("%s\n", getInfoFromCmdlineErr)
 			return
