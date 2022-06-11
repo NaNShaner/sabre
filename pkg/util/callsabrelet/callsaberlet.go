@@ -111,7 +111,7 @@ func (u *Basest) ResolveCallSabreletResponse(yml *Basest) {
 //GetStatusReport 上报服务器状态
 func (u *Basest) GetStatusReport(host string, hostStatus bool) map[string]sabstruct.RunTimeStatus {
 	var s sabstruct.RunTimeStatus
-	var status map[string]sabstruct.RunTimeStatus
+	status := make(map[string]sabstruct.RunTimeStatus)
 	s.StatusReportTimer = (*commontools.Basest)(u).AddNowTime()
 	s.RunStatus = hostStatus
 	status[host] = s

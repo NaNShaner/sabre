@@ -40,16 +40,20 @@ var (
 	PrintLine   = "%-9s %-15s %6s %5s %11s %5s %5t %7t %6s\n"
 )
 
-func (o OutPutInfo) PrintFmt(c CmdArgs) {
+func PrintFmt(c CmdArgs) error {
 	dbKey, err := FmtDBKey(c)
 	if err != nil {
-
+		return err
 	}
-	willOutPutReslut := UseKeyGetInfoFromDB(dbKey)
+	willOutPutResult, getOutPutResultErr := UseKeyGetInfoFromDB(dbKey)
+	if getOutPutResultErr != nil {
+		return getOutPutResultErr
+	}
 	fmt.Printf(PrintHeader, "namespace", "host", "midType", "projectName", "port", "version", "monitor", "running", "runningTime")
-	for _, info := range willOutPutReslut {
+	for _, info := range willOutPutResult {
 		fmt.Printf(PrintLine, info.Namespace, info.Host, info.MidType, info.AppName, info.Port, info.MidVersion, info.Monitor, info.Running, info.RunningTime)
 	}
+	return nil
 }
 
 func FmtDBKey(c CmdArgs) (string, error) {
@@ -58,21 +62,21 @@ func FmtDBKey(c CmdArgs) (string, error) {
 	return path.Join(splitSep, c.ResType, c.Namespace, c.MidType, c.NetArea), nil
 }
 
-func UseKeyGetInfoFromDB(s string) []OutPutInfo {
+func UseKeyGetInfoFromDB(s string) ([]OutPutInfo, error) {
 	var O OutPutInfo
 	sab := &sabstruct.Config{}
 	var getOutPutInfo []OutPutInfo
 	useKeyGetInfoFromDB, getErr := dbload.GetKeyFromETCD(s, true)
 	if getErr != nil {
-		return nil
+		return nil, getErr
 	}
 	for _, kv := range useKeyGetInfoFromDB {
 		err := json.Unmarshal(kv.Value, sab)
 		if err != nil {
-			return nil
+			return nil, err
 		}
 		for _, host := range sab.DeployHost {
-			O.AppName = sab.Namespace
+			O.Namespace = sab.Namespace
 			O.Host = host
 			O.MidType = sab.Midtype
 			O.AppName = sab.Appname
@@ -91,5 +95,41 @@ func UseKeyGetInfoFromDB(s string) []OutPutInfo {
 		}
 
 	}
-	return getOutPutInfo
+	return getOutPutInfo, nil
+}
+
+//GetInfoFromCmdline 接收命令行参数
+//r 资源类型，例如 mid
+//n 系统简称，例如 ERP
+//m 资源种类，例如 Tomcat
+func GetInfoFromCmdline(r, n, m string) (CmdArgs, error) {
+	var c CmdArgs
+	var s OutPutInfo
+	sab := &sabstruct.Config{}
+
+	key := path.Join("/", r, n, m)
+	useKeyGetInfoFromDB, getErr := dbload.GetKeyFromETCD(key, false)
+	if getErr != nil {
+
+	}
+	for _, kv := range useKeyGetInfoFromDB {
+		err := json.Unmarshal(kv.Value, sab)
+		if err != nil {
+			return CmdArgs{}, err
+		}
+	}
+	s.Namespace = sab.Namespace
+	s.MidType = sab.Midtype
+	s.AppName = sab.Appname
+	s.Port = sab.ListeningPort
+	s.MidVersion = sab.Version
+	s.Monitor = true
+	s.Running = true
+	s.RunningTime = "10d"
+
+	c.ResType = "mid"
+	c.OutPutInfo = s
+
+	return c, nil
+
 }
