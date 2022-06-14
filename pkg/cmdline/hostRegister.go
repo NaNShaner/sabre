@@ -33,24 +33,31 @@ var cmdHostRegister = &cobra.Command{
 			}
 			v := make(map[string]res.Hosts)
 			v[kName] = valueName
-			//json, err := yamlfmt.PrintResultJson(v)
-			//if err != nil {
-			//	return
-			//}
-			//fmt.Printf("%s\n", json)
-			reqResp, setHttpReqErr := hostregister.SetHttpReq(kName, valueName)
+			//注册主机信息
+			registerHost, setHttpReqErr := hostregister.SetHttpReq(kName, valueName)
 			if setHttpReqErr != nil {
-				fmt.Printf("请求sabrelet 失败,%s\n", setHttpReqErr)
+				fmt.Printf("Failed to request API server when registering host information, %s\n", setHttpReqErr)
 				os.Exit(-1)
 			}
-			fmt.Printf("%s\n", reqResp)
+			//注册主机列表，便于sabrelet查询
+			HostToListSaveToDBKey, getHostToListSaveToDBKeyErr := hostregister.AddHostToListSaveToDB(kName)
+			if getHostToListSaveToDBKeyErr != nil {
+				fmt.Printf("Get qurey host key err, %s", getHostToListSaveToDBKeyErr)
+				os.Exit(-1)
+			}
+
+			if hostToListSaveToDBErr := hostregister.SetHostListInfoTODB(HostToListSaveToDBKey, kName); hostToListSaveToDBErr != nil {
+				fmt.Printf("Failed to request API server while registering host list, %s\n", hostToListSaveToDBErr)
+				os.Exit(-1)
+			}
+			fmt.Printf("%s\n", registerHost)
 
 		}
 	},
 	// 命令执行前进行判断，类似django的post_save
 	PersistentPreRunE: func(cmdline *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return fmt.Errorf("参数数量不正确，仅需要请输入yaml文件名称即可\n")
+			return fmt.Errorf("Register host please enter the IP address of the host\n")
 		}
 		return nil
 	},

@@ -23,14 +23,22 @@ type Basest sabstruct.Config
 //RegInfoToDB 由 sabrectl 发起主机注册请求，再由sabrelet保存进入etcd，sabrelet本地缓存
 // etcd的key /hosts/erp/machine/app/hostname:res.Hosts
 func RegInfoToDB(wr http.ResponseWriter, req *http.Request) {
-	HostStruct := make(map[string]res.Hosts)
+	//主机注册时HostStruct 的values是res.Hosts
+	//旁路登记注册主机便于sablet进行监控时，values是string
+
+	HostStruct := make(map[string]interface{})
 	contentLength := req.ContentLength
 	body := make([]byte, contentLength)
-	req.Body.Read(body)
+	_, readErr := req.Body.Read(body)
+	if readErr != nil {
+		http.Error(wr, readErr.Error(), http.StatusBadRequest)
+	}
 	//if readBodyErr != nil {
 	//	http.Error(wr, readBodyErr.Error(), http.StatusBadRequest)
 	//}
+
 	err := json.Unmarshal(body, &HostStruct)
+
 	if err != nil {
 		http.Error(wr, err.Error(), http.StatusBadRequest)
 	}
@@ -131,46 +139,58 @@ func ValueName(h res.HostRegister, ip, beloogto, area string) (res.Hosts, error)
 	return register, nil
 }
 
-//SetHttpReq 与API网关交互
-func SetHttpReq(etcdKey string, etcdValue res.Hosts) (string, error) {
+//SetHttpReq 与API网关交互，将注册主机信息上送
+//主机注册时 etcdValue 为 res.hosts
+func SetHttpReq(etcdKey string, etcdValue interface{}) (string, error) {
 
 	apiServer, apiServerErr := config.GetApiServerUrl()
 	if apiServerErr != nil || apiServer == "" {
 		return "", fmt.Errorf("saberlet server address not found in configuration file %s", apiServerErr)
 	}
-	// TODO: 方便调试，后续删除
-	//fmt.Printf("apiServer:%s \n", apiServer)
-	insertDB := make(map[string]res.Hosts)
-
+	insertDB := make(map[string]interface{})
 	insertDB[etcdKey] = etcdValue
 	apiUrl := apiServer + "/hostInfo/register"
 	bt, err := json.Marshal(insertDB)
-	//fmt.Printf("apiUrl:%s \n", apiUrl)
+	if err != nil {
+		return "", fmt.Errorf("in SetHttpReq %+v json.Marshal Err", insertDB)
+	}
+	////fmt.Printf("apiUrl:%s \n", apiUrl)
 	reqBody := strings.NewReader(string(bt))
 	httpReq, err := http.NewRequest("POST", apiUrl, reqBody)
 	if err != nil {
-		return "", fmt.Errorf("NewRequest fail, url: %s, reqBody: %s, err: %v", apiUrl, reqBody, err)
+		return "", fmt.Errorf("NewRequest fail, url: %s, reqBody: %+v, err: %v", apiUrl, reqBody, err)
 
 	}
-	httpReq.Header.Add("Content-Type", "application/json")
+	//httpReq.Header.Add("Content-Type", "application/json")
 
 	// DO: HTTP请求
 	httpRsp, err := http.DefaultClient.Do(httpReq)
-	if err != nil {
-		return "", fmt.Errorf("do http fail, url: %s, reqBody: %s, err:%v", apiUrl, reqBody, err)
+	if err != nil || httpRsp.StatusCode != 200 {
+		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v, req.status:%s", apiUrl, reqBody, err, httpRsp.Status)
 	}
 	defer httpRsp.Body.Close()
-
 	// Read: HTTP结果
 	resFromServer, err := ioutil.ReadAll(httpRsp.Body)
 	if err != nil {
-		return "", fmt.Errorf("ReadAll failed, url: %s, reqBody: %s, err: %v", apiUrl, reqBody, err)
+		return "", fmt.Errorf("ReadAll failed, url: %s, reqBody: %+v, err: %v", apiUrl, reqBody, err)
 	}
 	return fmt.Sprintf("Server %s registration succeeded", resFromServer), nil
 }
 
-//ReportHostSabreletStatus 周期性上报当前服务器的saberlet的状态
-//TODO：逻辑待补充
-func ReportHostSabreletStatus() {
+//SetHostListInfoTODB TODO 信息入库，未经过API网关
+func SetHostListInfoTODB(k, v string) error {
+	err := dbload.SetIntoDB(k, v)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
+//AddHostToListSaveToDB 将注册主机信息的key拆分为注册主机列表的key
+func AddHostToListSaveToDB(s string) (string, error) {
+	sSplit := strings.Split(s, "/")
+	if len(sSplit) != 7 {
+		return "", fmt.Errorf("Failed to format %s as key of host list\n", s)
+	}
+	return path.Join("/", sSplit[1], sSplit[5], sSplit[6]), nil
 }

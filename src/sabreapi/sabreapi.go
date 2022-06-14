@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/sevlyar/go-daemon"
+
 	"log"
 	"net/http"
 	"sabre/pkg/apiserver"
@@ -14,23 +14,23 @@ func main() {
 	http.HandleFunc("/hostInfo/register", hostregister.RegInfoToDB)
 	http.HandleFunc("/midRegx/show", apiserver.ShowInfoFromDB)
 
-	cntxt := &daemon.Context{
-		PidFileName: "/var/run/sabreapi.pid",
-		PidFilePerm: 0644,
-		LogFileName: "/var/log/sabreapi.log",
-		LogFilePerm: 0640,
-		Umask:       027,
-		Args:        []string{"[sabreapi]"},
-	}
-
-	d, err := cntxt.Reborn()
-	if err != nil {
-		log.Fatal("Unable to run: ", err)
-	}
-	if d != nil {
-		return
-	}
-	defer cntxt.Release()
+	//cntxt := &daemon.Context{
+	//	PidFileName: "/var/run/sabreapi.pid",
+	//	PidFilePerm: 0644,
+	//	LogFileName: "/var/log/sabreapi.log",
+	//	LogFilePerm: 0640,
+	//	Umask:       027,
+	//	Args:        []string{"[sabreapi]"},
+	//}
+	//
+	//d, err := cntxt.Reborn()
+	//if err != nil {
+	//	log.Fatal("Unable to run: ", err)
+	//}
+	//if d != nil {
+	//	return
+	//}
+	//defer cntxt.Release()
 
 	log.Print("sabreapi daemon started.")
 
@@ -38,6 +38,6 @@ func main() {
 	fmt.Printf("The listening port of the api server is %s\n", listenPort)
 	httpListenAndServeErr := http.ListenAndServe(":"+listenPort, nil)
 	if httpListenAndServeErr != nil {
-		log.Fatal(err)
+		log.Fatal(httpListenAndServeErr)
 	}
 }

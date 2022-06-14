@@ -62,6 +62,7 @@ type HostRegister interface {
 	AddAnnotation(a ...string) []string
 }
 
+//ServerRegister 主机信息注册入库
 func (h *Hosts) ServerRegister(ip, belongto, area string) (Hosts, error) {
 	h.HostInfo, _ = h.GetOsInfo()
 	hostName, getHostNameErr := os.Hostname()
