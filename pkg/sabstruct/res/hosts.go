@@ -15,10 +15,12 @@ import (
 	"time"
 )
 
-type MonitorStaus struct {
+type MonitorStatus struct {
 	//Online 根据ping确认主机在线状态
-	Online bool
-	Mem    map[uint64]uint64
+	Online     bool
+	Mem        map[uint64]uint64
+	OnlineDay  int
+	OnlineTime string
 }
 
 //HostInfo 主机信息
@@ -41,7 +43,7 @@ type Hosts struct {
 	Area string
 	//Annotation 其他声明，例如冷备节点
 	Annotation []string
-	MonitorStaus
+	MonitorStatus
 	HostInfo
 }
 

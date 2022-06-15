@@ -33,8 +33,7 @@ type AddNowTime interface {
 }
 
 func (u *Basest) AddNowTimeByEachHost() *Basest {
-	getPoint := (*commontools.Basest)(u)
-	u.Timer = getPoint.AddNowTime()
+	u.Timer = commontools.AddNowTime()
 	return u
 }
 
@@ -112,7 +111,7 @@ func (u *Basest) ResolveCallSabreletResponse(yml *Basest) {
 func (u *Basest) GetStatusReport(host string, hostStatus bool) map[string]sabstruct.RunTimeStatus {
 	var s sabstruct.RunTimeStatus
 	status := make(map[string]sabstruct.RunTimeStatus)
-	s.StatusReportTimer = (*commontools.Basest)(u).AddNowTime()
+	s.StatusReportTimer = commontools.AddNowTime()
 	s.RunStatus = hostStatus
 	status[host] = s
 	return status
@@ -137,7 +136,7 @@ func (u *Basest) CalculateRunningDay(host string) (int, error) {
 			for h, hInfo := range hStruct {
 				// 判断为当前主机信息，将库中的时间数据和当前时间对比
 				if h == host {
-					runningDays := carbon.Parse((*commontools.Basest)(u).AddNowTime()).DiffInDays(carbon.Parse(hInfo.StatusReportTimer))
+					runningDays := carbon.Parse(hInfo.StatusReportTimer).DiffInDays(carbon.Parse(commontools.AddNowTime()))
 					return int(runningDays), nil
 				}
 			}
