@@ -20,10 +20,6 @@ type Schedule struct {
 	ApiVesion string
 }
 
-func Cron(m *commontools.Basest) (string, error) {
-	return "", nil
-}
-
 //Watch 监控ETCD中资源状态变化，发起调度逻辑
 func Watch() {
 	cntxt := &daemon.Context{

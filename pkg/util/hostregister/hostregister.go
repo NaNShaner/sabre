@@ -3,6 +3,7 @@ package hostregister
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -22,56 +23,42 @@ type Basest sabstruct.Config
 
 //RegInfoToDB 由 sabrectl 发起主机注册请求，再由sabrelet保存进入etcd，sabrelet本地缓存
 // etcd的key /hosts/erp/machine/app/hostname:res.Hosts
-func RegInfoToDB(wr http.ResponseWriter, req *http.Request) {
+func RegInfoToDB(ctx *gin.Context) {
 	//主机注册时HostStruct 的values是res.Hosts
 	//旁路登记注册主机便于sablet进行监控时，values是string
 
-	HostStruct := make(map[string]interface{})
-	contentLength := req.ContentLength
-	body := make([]byte, contentLength)
-	_, readErr := req.Body.Read(body)
-	if readErr != nil {
-		http.Error(wr, readErr.Error(), http.StatusBadRequest)
+	HostStruct := make(map[string]res.Hosts)
+	if err := ctx.ShouldBind(&HostStruct); err != nil {
+		// 处理错误请求
+		return
 	}
-	//if readBodyErr != nil {
-	//	http.Error(wr, readBodyErr.Error(), http.StatusBadRequest)
-	//}
-
-	err := json.Unmarshal(body, &HostStruct)
-
-	if err != nil {
-		http.Error(wr, err.Error(), http.StatusBadRequest)
-	}
-
-	for s, host := range HostStruct {
-		resultJson, err := yamlfmt.PrintResultJson(host)
+	for s, basest := range HostStruct {
+		resultJson, err := yamlfmt.PrintResultJson(basest)
 		if err != nil {
-			http.Error(wr, err.Error(), http.StatusBadRequest)
+			ctx.String(http.StatusBadRequest, err.Error())
 		}
 		if err := dbload.SetIntoDB(s, string(resultJson)); err != nil {
-			http.Error(wr, err.Error(), http.StatusBadRequest)
-			return
+			ctx.String(http.StatusBadRequest, err.Error())
 		}
-		_, _ = wr.Write([]byte(s))
 	}
 
 }
 
 //GetInfoToInstall 接收sabreschedule的调用，每台机器上都启动着sabrelet，由scheduled挨个调用下发部署指令
-func GetInfoToInstall(wr http.ResponseWriter, req *http.Request) {
+func GetInfoToInstall(ctx *gin.Context) {
 	s := make(map[string]sabstruct.Config)
-	contentLength := req.ContentLength
-	body := make([]byte, contentLength)
-	req.Body.Read(body)
-	jsonUnmarshalErr := json.Unmarshal(body, &s)
+
+	if err := ctx.ShouldBind(&s); err != nil {
+		// 处理错误请求
+		return
+	}
+
 	printResultJson, printResultJsonErr := yamlfmt.PrintResultJson(s)
 	if printResultJsonErr != nil {
 		fmt.Printf("saberlet err %s\n", printResultJson)
 	}
 	fmt.Printf("saberlet info %s\n", printResultJson)
-	if jsonUnmarshalErr != nil {
-		http.Error(wr, jsonUnmarshalErr.Error(), http.StatusBadRequest)
-	}
+
 loop:
 	for k, basestStruct := range s {
 		var localHostIp string
@@ -86,8 +73,7 @@ loop:
 
 		_, deployErr := Ti.Deploy((*commontools.Basest)(&basestStruct))
 		if deployErr != nil {
-			fmt.Printf("server %s  ,%s\n", localHostIp, deployErr)
-			wr.Write([]byte(fmt.Sprintf("server %s  ,%s\n", localHostIp, deployErr)))
+			ctx.String(http.StatusBadRequest, fmt.Sprintf("server %s  ,%s\n", localHostIp, deployErr))
 			break loop
 		}
 		//for _, host := range basestStruct.DeployHost {
@@ -97,7 +83,7 @@ loop:
 
 		resultJson, err := yamlfmt.PrintResultJson(basestStruct)
 		if err != nil {
-			http.Error(wr, err.Error(), http.StatusBadRequest)
+			ctx.String(http.StatusBadRequest, fmt.Sprintf("server %s  ,%s\n", localHostIp, err))
 		}
 		setIntoDBErrOne := dbload.SetIntoDB(k, string(resultJson))
 		if setIntoDBErrOne != nil {
@@ -105,7 +91,7 @@ loop:
 			time.Sleep(time.Second)
 			setIntoDBErrTwo := dbload.SetIntoDB(k, string(resultJson))
 			if setIntoDBErrTwo != nil {
-				http.Error(wr, setIntoDBErrTwo.Error(), http.StatusBadRequest)
+				ctx.String(http.StatusBadRequest, fmt.Sprintf("server %s  ,%s\n", localHostIp, setIntoDBErrTwo))
 			}
 		}
 	}
@@ -124,8 +110,8 @@ func KeyName(n, h, a, i string) string {
 }
 
 //ValueName 入库的value
-func ValueName(h res.HostRegister, ip, beloogto, area string) (res.Hosts, error) {
-	register, err := h.ServerRegister(ip, beloogto, area)
+func ValueName(h res.HostRegister, ip, belongTo, area string) (res.Hosts, error) {
+	register, err := h.ServerRegister(ip, strings.ToUpper(belongTo), area)
 	if err != nil {
 		return res.Hosts{}, err
 	}
@@ -156,28 +142,29 @@ func SetHttpReq(etcdKey string, etcdValue interface{}) (string, error) {
 	}
 	////fmt.Printf("apiUrl:%s \n", apiUrl)
 	reqBody := strings.NewReader(string(bt))
-	httpReq, err := http.NewRequest("POST", apiUrl, reqBody)
-	if err != nil {
+	httpReq, httpReqErr := http.NewRequest("POST", apiUrl, reqBody)
+	if httpReqErr != nil {
 		return "", fmt.Errorf("NewRequest fail, url: %s, reqBody: %+v, err: %v", apiUrl, reqBody, err)
 
 	}
-	//httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Content-Type", "application/json")
 
 	// DO: HTTP请求
-	httpRsp, err := http.DefaultClient.Do(httpReq)
-	if err != nil || httpRsp.StatusCode != 200 {
+	httpRsp, httpRspErr := http.DefaultClient.Do(httpReq)
+	if httpRspErr != nil {
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v, req.status:%s", apiUrl, reqBody, err, httpRsp.Status)
 	}
 	defer httpRsp.Body.Close()
 	// Read: HTTP结果
-	resFromServer, err := ioutil.ReadAll(httpRsp.Body)
-	if err != nil {
+	resFromServer, resFromServerErr := ioutil.ReadAll(httpRsp.Body)
+	if resFromServerErr != nil {
 		return "", fmt.Errorf("ReadAll failed, url: %s, reqBody: %+v, err: %v", apiUrl, reqBody, err)
 	}
 	return fmt.Sprintf("Server %s registration succeeded", resFromServer), nil
 }
 
-//SetHostListInfoTODB TODO 信息入库，未经过API网关
+//SetHostListInfoTODB
+//TODO: 信息入库，未经过API网关
 func SetHostListInfoTODB(k, v string) error {
 	err := dbload.SetIntoDB(k, v)
 	if err != nil {

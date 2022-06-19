@@ -65,7 +65,7 @@ type HostRegister interface {
 }
 
 //ServerRegister 主机信息注册入库
-func (h *Hosts) ServerRegister(ip, belongto, area string) (Hosts, error) {
+func (h *Hosts) ServerRegister(ip, belongTo, area string) (Hosts, error) {
 	h.HostInfo, _ = h.GetOsInfo()
 	hostName, getHostNameErr := os.Hostname()
 	if getHostNameErr != nil {
@@ -78,7 +78,7 @@ func (h *Hosts) ServerRegister(ip, belongto, area string) (Hosts, error) {
 		return Hosts{}, IpFmtErr
 	}
 	h.IPAddr = ipAddr
-	h.BelongTo = belongto
+	h.BelongTo = strings.ToUpper(belongTo)
 	h.Area = area
 
 	h.Online = true
@@ -87,6 +87,9 @@ func (h *Hosts) ServerRegister(ip, belongto, area string) (Hosts, error) {
 		return Hosts{}, getMemErr
 	}
 	h.Mem = memInfo
+
+	var cstSh, _ = time.LoadLocation("Asia/Shanghai") //上海
+	h.OnlineTime = time.Now().In(cstSh).Format("2006-01-02 15:04:05.1234")
 	return *h, nil
 }
 

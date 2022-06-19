@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"log"
 	"sabre/pkg/sabstruct"
+	"strings"
 )
 
 // Config 创建一个结构体
@@ -41,10 +42,12 @@ func YamlFmt(f string, s sabstruct.Config) (*sabstruct.Config, error) {
 	//使用yaml包，把读取到的data格式化后解析到config实例中
 	err := yaml.Unmarshal(data, &s)
 	if err != nil {
-		fmt.Printf("==> %q", err)
-		panic("decode error")
+		fmt.Printf("json decode error ==> %q", err)
 	}
-
+	// 设置所有的MidType 都为小写
+	s.Midtype = strings.ToLower(s.Midtype)
+	// 设置所有的Namespace 都为大写
+	s.Namespace = strings.ToUpper(s.Namespace)
 	//resultJson, err := PrintResultJson(s)
 	//if err != nil {
 	//	return nil, err

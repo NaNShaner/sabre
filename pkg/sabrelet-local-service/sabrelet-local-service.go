@@ -1,7 +1,9 @@
 package sabrelet_local_service
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/golang-module/carbon/v2"
 	"net"
 	"path"
 	"sabre/pkg/dbload"
@@ -14,10 +16,10 @@ var (
 	hostPrex = "/hosts"
 )
 
-type HostMonitor struct {
-}
+var h res.MonitorStatus
 
-func FmtQueryKey() (string, error) {
+//LocalServerName 获取本机服务器主机名
+func LocalServerName() (string, error) {
 	localServerName, getLocalServerNameErr := commontools.GetLocalServerName()
 	if getLocalServerNameErr != nil {
 		return "", getLocalServerNameErr
@@ -25,12 +27,10 @@ func FmtQueryKey() (string, error) {
 	return localServerName, nil
 }
 
-func GetInfoList() (string, error) {
-	localServerName, err := FmtQueryKey()
-	if err != nil {
+//GetInfoList 获取本机服务器IP地址
+func GetInfoList(hostname string) (string, error) {
 
-	}
-	queryKey := path.Join(hostPrex, localServerName)
+	queryKey := path.Join(hostPrex, hostname)
 	getKeyFromETCD, err := dbload.GetKeyFromETCD(queryKey, true)
 	if err != nil {
 		return "", err
@@ -51,18 +51,60 @@ func GetInfoList() (string, error) {
 	return "", fmt.Errorf("Failed to resolve server IP address from etcd, query key value is %s\n", queryKey)
 }
 
+//QueryDB 通过qureyKey 查询数据库，获取
+func QueryDB(hostname, hostip string) (string, error) {
+	qureyKey := path.Join(hostPrex, hostname, hostip)
+
+	getKeyFromETCD, err := dbload.GetKeyFromETCD(qureyKey, false)
+	if err != nil {
+		return "", err
+	}
+	if len(getKeyFromETCD) != 0 {
+		for _, value := range getKeyFromETCD {
+			return string(value.Value), nil
+		}
+	}
+	return "", fmt.Errorf("No data with %s as key was queried in the database\n", qureyKey)
+}
+
+func CalculateIntervalDays(s string) int {
+	runningDays := carbon.Parse(s).DiffInDays(carbon.Parse(commontools.AddNowTime()))
+	return int(runningDays)
+}
+
 //ReportHostSabreletStatus 周期性上报当前服务器的sabrelet的状态
 //TODO：逻辑待补充
-func ReportHostSabreletStatus() {
-	var ms res.HostRegister
-	getMem, err := ms.GetMem()
-	if err != nil {
-		return
-	}
-	h := ms.ReturnHost()
-	h.Online = true
-	h.Mem = getMem
+func ReportHostSabreletStatus(r string) (res.Hosts, error) {
 
+	var rs res.Hosts
+
+	getKeyFromETCD, err := dbload.GetKeyFromETCD(r, false)
+	if err != nil {
+		return res.Hosts{}, err
+	}
+
+	if len(getKeyFromETCD) != 1 {
+		return res.Hosts{}, fmt.Errorf("query multiple matching data in the database")
+	}
+	for _, value := range getKeyFromETCD {
+
+		jsonUnmarshalErr := json.Unmarshal(value.Value, &rs)
+		if jsonUnmarshalErr != nil {
+			return res.Hosts{}, jsonUnmarshalErr
+		}
+		fmt.Printf("==>%+v\n", rs)
+		getMem, getMemErr := rs.GetMem()
+		if getMemErr != nil {
+			return res.Hosts{}, getMemErr
+		}
+
+		rs.Mem = getMem
+		rs.OnlineDay = CalculateIntervalDays(rs.OnlineTime)
+
+		return rs, nil
+
+	}
+	return res.Hosts{}, fmt.Errorf("failed to report current server status\n")
 }
 
 //func ReportHostStatus() {

@@ -1,15 +1,21 @@
 package main
 
 import (
-	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/sevlyar/go-daemon"
 	"log"
-	"net/http"
 	"sabre/pkg/util/hostregister"
 )
 
 func main() {
-	http.HandleFunc("/hostInfo/Install", hostregister.GetInfoToInstall)
+	//http.HandleFunc("/hostInfo/Install", hostregister.GetInfoToInstall)
+
+	router := gin.Default()
+
+	router.POST("/hostInfo/Install", func(context *gin.Context) {
+		hostregister.GetInfoToInstall(context)
+	})
+
 	//TODO: WorkDir参数化
 	cntxt := &daemon.Context{
 		PidFileName: "/var/run/sabrelet.pid",
@@ -32,10 +38,9 @@ func main() {
 	log.Print("sabrelet daemon started.")
 
 	listenPort := "18081"
-	fmt.Printf("The listening port of the sabrelet server is %s.\n", listenPort)
-	httpErr := http.ListenAndServe(":"+listenPort, nil)
-	if httpErr != nil {
-		log.Fatal(httpErr)
+	runErr := router.Run(":" + listenPort)
+	if runErr != nil {
+		return
 	}
 	// 主goroutine堵塞
 	//sig := make(chan os.Signal, 2)

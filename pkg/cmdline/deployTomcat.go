@@ -25,12 +25,6 @@ var cmdDeployTomcat = &cobra.Command{
 				os.Exit(-1)
 			}
 			u := (*commontools.Basest)(yamlFmt)
-			// TODO 便于调试后续删除
-			//printResultJson, err := yamlfmt.PrintResultJson(u)
-			//if err != nil {
-			//	return
-			//}
-			//fmt.Printf("%s\n", printResultJson)
 
 			//判断yaml文件中期望部署的服务器是否属于当前namespace
 			CheckInstallServerBelongToNSErr := u.CheckInstallServerBelongToNS()
@@ -44,13 +38,7 @@ var cmdDeployTomcat = &cobra.Command{
 				fmt.Printf("%s\n", setInfoToDBErr)
 				os.Exit(-1)
 			}
-			fmt.Printf("Tomcat information warehousing succeeded，%s\n", setInfoToDB)
-
-			//_, err = Ti.Deploy((*commontools.Basest)(yamlFmt))
-			//if err != nil {
-			//	fmt.Printf("%s\n", err)
-			//	os.Exit(-1)
-			//}
+			fmt.Printf("Tomcat information warehousing succeeded %s\n", setInfoToDB)
 
 			b := (*callsabrelet.Basest)(yamlFmt)
 			callsabrelet.CallFaceOfSabrelet(b, u.DeployHost)

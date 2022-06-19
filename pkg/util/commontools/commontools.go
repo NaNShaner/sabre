@@ -271,7 +271,7 @@ func InMap(m map[string]struct{}, s string) bool {
 func GetKeyFromDB(kv []*mvccpb.KeyValue) []string {
 	var s []string
 	for _, ev := range kv {
-		fmt.Printf("%s\n", ev.Key)
+		//fmt.Printf("%s\n", ev.Key)
 		getServerList := strings.Split(string(ev.Key), "/")
 		s = append(s, getServerList[len(getServerList)-1])
 	}

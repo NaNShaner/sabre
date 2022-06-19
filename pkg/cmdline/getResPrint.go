@@ -28,8 +28,8 @@ var cmdGetResPrint = &cobra.Command{
 
 func init() {
 	cmdGetResPrint.Flags().StringVarP(&ns, "namespace", "n", "", "主机所属系统简称")
-	cmdGetResPrint.Flags().StringVarP(&rType, "rsType", "t", "", "资源类型")
-	cmdGetResPrint.Flags().StringVarP(&rKind, "rsKind", "k", "", "资源种类")
+	cmdGetResPrint.Flags().StringVarP(&rType, "rsType", "t", "", "资源类型，e.g. mid")
+	cmdGetResPrint.Flags().StringVarP(&rKind, "rsKind", "k", "", "资源种类，e.g. Tomcat")
 	namespaceErr := cmdGetResPrint.MarkFlagRequired("namespace")
 	if namespaceErr != nil {
 		fmt.Printf("%s，请输入-n 或者--namespace 输入", namespaceErr)

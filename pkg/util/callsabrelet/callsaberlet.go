@@ -88,12 +88,13 @@ func (u *Basest) CallSabrelet(s, host string) (string, error) {
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v, response:%s", s, reqBody, rspBodyErr, string(rspBody))
 	}
 	u.DeployHostStatus = append(u.DeployHostStatus, u.GetStatusReport(host, true))
-	u.ResolveCallSabreletResponse(u)
+	u.ResolveCallSabreletResponse(u, host)
 	return string(rspBody), nil
 }
 
 //ResolveCallSabreletResponse 处理sabrelet的返回结果，并更新etcd
-func (u *Basest) ResolveCallSabreletResponse(yml *Basest) {
+//h 为主机ip地址
+func (u *Basest) ResolveCallSabreletResponse(yml *Basest, h string) {
 	// 添加当前时间
 	u.AddNowTimeByEachHost()
 	setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(yml))
@@ -104,7 +105,7 @@ func (u *Basest) ResolveCallSabreletResponse(yml *Basest) {
 		fmt.Printf("%s\n", setInfoToDBErr)
 		// TODO 如果retry失败如何处理
 	}
-	fmt.Printf("%s install information Update succeeded，%s\n", u.Midtype, setInfoToDB)
+	fmt.Printf("server %s install %s information Update succeeded %s\n", h, u.Midtype, setInfoToDB)
 }
 
 //GetStatusReport 上报服务器状态
@@ -119,17 +120,17 @@ func (u *Basest) GetStatusReport(host string, hostStatus bool) map[string]sabstr
 
 //CalculateRunningDay 获取服务器中中间件的运行时间
 //host 为当前主机的ip地址
-func (u *Basest) CalculateRunningDay(host string) (int, error) {
-	key := "/mid" + u.Namespace + "/" + u.Midtype
+func (u *Basest) CalculateRunningDay(host string) error {
+	key := "/mid" + strings.ToUpper(u.Namespace) + "/" + strings.ToLower(u.Midtype)
 	typeInfoFromDB, getErr := dbload.GetKeyFromETCD(key, false)
 	if getErr != nil {
-		return 0, getErr
+		return getErr
 	}
 	// 从etcd中获取中间件的信息
 	for _, v := range typeInfoFromDB {
 		err := json.Unmarshal(v.Value, u)
 		if err != nil {
-			return 0, err
+			return err
 		}
 		// 获取DeployHostStatus 判断当前主机的信息
 		for _, hStruct := range u.DeployHostStatus {
@@ -137,13 +138,20 @@ func (u *Basest) CalculateRunningDay(host string) (int, error) {
 				// 判断为当前主机信息，将库中的时间数据和当前时间对比
 				if h == host {
 					runningDays := carbon.Parse(hInfo.StatusReportTimer).DiffInDays(carbon.Parse(commontools.AddNowTime()))
-					return int(runningDays), nil
+					hInfo.RunningDays = int(runningDays)
+					resultJson, resultJsonErr := yamlfmt.PrintResultJson(u)
+					if resultJsonErr != nil {
+
+					}
+					if setDBErr := dbload.SetIntoDB(key, string(resultJson)); setDBErr != nil {
+						return err
+					}
 				}
 			}
 		}
 
 	}
-	return 0, fmt.Errorf("failed to get runtime\n")
+	return fmt.Errorf("failed to get runtime\n")
 }
 
 //CallFaceOfSabrelet 调用每台机器上的sabrelet

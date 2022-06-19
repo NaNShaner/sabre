@@ -46,10 +46,15 @@ func PrintFmt(r, n, m string) error {
 	if getOutPutResultErr != nil {
 		return getOutPutResultErr
 	}
-	fmt.Printf(PrintHeader, "namespace", "host", "midType", "projectName", "port", "version", "monitor", "running", "runningTime")
-	for _, info := range willOutPutResult {
-		fmt.Printf(PrintLine, info.Namespace, info.Host, info.MidType, info.AppName, info.Port, info.MidVersion, info.Monitor, info.Running, info.RunningTime)
+	if len(willOutPutResult) != 0 {
+		fmt.Printf(PrintHeader, "namespace", "host", "midType", "projectName", "port", "version", "monitor", "running", "runningTime")
+		for _, info := range willOutPutResult {
+			fmt.Printf(PrintLine, info.Namespace, info.Host, info.MidType, info.AppName, info.Port, info.MidVersion, info.Monitor, info.Running, info.RunningTime)
+		}
+	} else {
+		return fmt.Errorf("no data obtained")
 	}
+
 	return nil
 }
 

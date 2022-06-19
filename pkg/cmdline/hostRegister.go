@@ -31,8 +31,11 @@ var cmdHostRegister = &cobra.Command{
 				fmt.Printf("%s\n", err)
 				os.Exit(-1)
 			}
-			v := make(map[string]res.Hosts)
-			v[kName] = valueName
+			//v := make(map[string]res.Hosts)
+			//v[kName] = valueName
+
+			//fmt.Printf("==-==- %+v\n", valueName)
+
 			//注册主机信息
 			registerHost, setHttpReqErr := hostregister.SetHttpReq(kName, valueName)
 			if setHttpReqErr != nil {
