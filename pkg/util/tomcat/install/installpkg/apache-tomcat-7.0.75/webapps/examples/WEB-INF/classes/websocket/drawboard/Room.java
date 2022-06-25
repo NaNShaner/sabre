@@ -112,8 +112,8 @@ public final class Room {
     private static final int TIMER_DELAY = 30;
 
     /**
-     * The current active broadcast timer task. If null, then no Broadcast task is scheduled.
-     * The Task will be scheduled if the first player enters the Room, and
+     * The current active broadcast timer task. If null, then no Broadcast task is Logfile.
+     * The Task will be Logfile if the first player enters the Room, and
      * cancelled if the last player exits the Room, to avoid unnecessary timer executions.
      */
     private TimerTask activeBroadcastTimerTask;
@@ -182,7 +182,7 @@ public final class Room {
         // Add the new player to the list.
         players.add(p);
 
-        // If currently no Broadcast Timer Task is scheduled, then we need to create one.
+        // If currently no Broadcast Timer Task is Logfile, then we need to create one.
         if (activeBroadcastTimerTask == null) {
             activeBroadcastTimerTask = createBroadcastTimerTask();
             drawmessageBroadcastTimer.schedule(activeBroadcastTimerTask,

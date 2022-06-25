@@ -40,6 +40,7 @@ func RegInfoToDB(ctx *gin.Context) {
 		if err := dbload.SetIntoDB(s, string(resultJson)); err != nil {
 			ctx.String(http.StatusBadRequest, err.Error())
 		}
+		_, _ = ctx.Writer.WriteString(s)
 	}
 
 }
@@ -151,7 +152,7 @@ func SetHttpReq(etcdKey string, etcdValue interface{}) (string, error) {
 
 	// DO: HTTP请求
 	httpRsp, httpRspErr := http.DefaultClient.Do(httpReq)
-	if httpRspErr != nil {
+	if httpRspErr != nil || httpRsp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v, req.status:%s", apiUrl, reqBody, err, httpRsp.Status)
 	}
 	defer httpRsp.Body.Close()

@@ -5,7 +5,7 @@ metadata:
     netarea: WEB
     appname: cons
 spec:
-    midtype: Tomcat
+    midtype: tomcat
     version: 7.0.75
     installpath: /u02/app
     pkgdownloadpath: http://124.71.219.53:8001/uploads/uploads/2022/05/07/apache-tomcat-7.0.75.tar.gz
@@ -28,5 +28,4 @@ spec:
     deployaction:
         action: Install
         deployhost:
-            - 192.168.3.182
             - 192.168.3.58

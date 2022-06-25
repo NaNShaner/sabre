@@ -1,13 +1,12 @@
 [Unit]
 Description=sabrelet: The sabre Node Agent
-Wants=network-online.target
 After=network.target
 
 [Service]
 ExecStart=/usr/sbin/sabrelet
-Restart=always
-StartLimitInterval=0
-RestartSec=12s
+KillMode=process
+Restart=on-failure
+RestartSec=42s
 
 [Install]
 WantedBy=multi-user.target

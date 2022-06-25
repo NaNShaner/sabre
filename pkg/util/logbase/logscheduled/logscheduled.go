@@ -12,9 +12,9 @@ import (
 
 var Log *zap.SugaredLogger
 
-const (
+var (
 	outputDir = "/var/log/"
-	scheduled = "scheduled.log"
+	Logfile   = "Logfile.log"
 )
 
 func init() {
@@ -59,13 +59,13 @@ func init() {
 	//})
 
 	// 获取 info、warn日志文件的io.Writer 抽象 getWriter() 在下方实现
-	infoHook_1 := os.Stdout
-	infoHook_2 := getWriter(scheduled)
+	// infoHook_1 := os.Stdout          // 输出控制台
+	infoHook_2 := getWriter(Logfile) // 输出日志文件
 	//errorHook := getWriter(errPath)
 
 	// 最后创建具体的Logger
 	core := zapcore.NewTee(
-		zapcore.NewCore(encoder, zapcore.AddSync(infoHook_1), infoLevel),
+		// zapcore.NewCore(encoder, zapcore.AddSync(infoHook_1), infoLevel),
 		zapcore.NewCore(encoder, zapcore.AddSync(infoHook_2), infoLevel),
 		//zapcore.NewCore(encoder, zapcore.AddSync(errorHook), warnLevel),
 	)

@@ -33,30 +33,30 @@ import (
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	clientv3 "go.etcd.io/etcd/client/v3"
-	l "sabre/pkg/util/logbase/logscheduled"
+	L "sabre/pkg/util/logbase/logscheduled"
+
+	//l "sabre/pkg/util/logbase/logscheduled"
 	"strings"
 	"time"
 )
 
 var (
-	midRegx  = "mid"
-	hostRegx = "hosts"
-)
-
-var (
+	midRegx   = "mid"
+	hostRegx  = "hosts"
 	midTomcat = "tomcat"
 	// midJDK    = "jdk"
 )
 
 //GetDBCli 获取ETCDCli
 func GetDBCli() (*clientv3.Client, error) {
+	endpoints := []string{"192.168.3.111:2379"}
 	cli, err := clientv3.New(clientv3.Config{
 		//Endpoints: []string{"124.71.219.53:2379"},
-		Endpoints:   []string{"192.168.3.111:2379"},
+		Endpoints:   endpoints,
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
-		l.Log.Errorf("failed to get cli for etcd, %s\n", err)
+		L.Log.Errorf("failed to get cli for etcd, %s. The server address is %s\n", err, endpoints)
 		return nil, err
 	}
 	return cli, err
@@ -72,21 +72,25 @@ func SetIntoDB(k, v string) error {
 	defer cli.Close()
 
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(30))
-	_, err = cli.Put(context.TODO(), k, v)
+	_, putErr := cli.Put(context.TODO(), k, v)
 
-	if err != nil {
+	if putErr != nil {
 		switch err {
 		case context.Canceled:
-			return fmt.Errorf("ctx is canceled by another routine: %v\n", err)
+			L.Log.Errorf("ctx is canceled by another routine: %v\n", putErr)
+			return fmt.Errorf("ctx is canceled by another routine: %v\n", putErr)
 		case context.DeadlineExceeded:
-			return fmt.Errorf("ctx is attached with a deadline is exceeded: %v\n", err)
+			L.Log.Errorf("ctx is attached with a deadline is exceeded: %v\n", putErr)
+			return fmt.Errorf("ctx is attached with a deadline is exceeded: %v\n", putErr)
 		case rpctypes.ErrEmptyKey:
-			return fmt.Errorf("client-side error: %v\n", err)
+			L.Log.Errorf("client-side error: %v\n", putErr)
+			return fmt.Errorf("client-side error: %v\n", putErr)
 		default:
-			return fmt.Errorf("bad cluster endpoints, which are not etcd servers: %v\n", err)
+			L.Log.Errorf("bad cluster endpoints, which are not etcd servers: %v\n", putErr)
+			return fmt.Errorf("bad cluster endpoints, which are not etcd servers: %v\n", putErr)
 		}
 	}
-	//fmt.Printf("%+v\n", *resp)
+	L.Log.Infof("数据库入库成功，%s：%s", k, v)
 	return nil
 
 }
@@ -95,7 +99,7 @@ func SetIntoDB(k, v string) error {
 func WatchFromDB(s string) {
 	cli, err := GetDBCli()
 	if err != nil {
-		l.Log.Errorf("connect failed, %s\n", err)
+		L.Log.Infof("connect failed, %s\n", err)
 		return
 	}
 	defer cli.Close()
@@ -106,24 +110,24 @@ func WatchFromDB(s string) {
 		for wresp := range rch {
 			err = wresp.Err()
 			if err != nil {
-				l.Log.Errorf("etcd watch response err, %s\n", err)
+				L.Log.Infof("etcd watch response err, %s\n", err)
 			}
 			for _, ev := range wresp.Events {
 				//TODO: 判断执行动作，发起调度指令
-				l.Log.Info("%s %q %q\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+				L.Log.Info("%s %q %q\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
 				keySplit, err := keySplit(ev.Kv.Key)
 				if err != nil {
 					return
 				}
 				switch {
 				case isMidType(keySplit):
-					l.Log.Infof("isMidType: %s\n", ev.Kv.Key)
+					L.Log.Infof("isMidType: %s\n", ev.Kv.Key)
 					switch {
 					case isMidTypeOfTomcat(keySplit):
-						l.Log.Infof("isMidTypeOfTomcat %s\n", ev.Kv.Key)
+						L.Log.Infof("isMidTypeOfTomcat %s\n", ev.Kv.Key)
 					}
 				case isMidHost(keySplit):
-					l.Log.Infof("isMidHost: %s\n", ev.Kv.Key)
+					L.Log.Infof("isMidHost: %s\n", ev.Kv.Key)
 				default:
 					return
 				}

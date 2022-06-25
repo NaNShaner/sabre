@@ -10,6 +10,7 @@ import (
 	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct"
 	"sabre/pkg/util/commontools"
+	l "sabre/pkg/util/logbase/logscheduled"
 	"sabre/pkg/yamlfmt"
 	"strings"
 	"time"
@@ -104,6 +105,10 @@ func (u *Basest) ResolveCallSabreletResponse(yml *Basest, h string) {
 		_, _ = apiserver.HttpReq((*apiserver.Basest)(u))
 		fmt.Printf("%s\n", setInfoToDBErr)
 		// TODO 如果retry失败如何处理
+	}
+	err := u.CalculateRunningDay(h)
+	if err != nil {
+		l.Log.Errorf("获取中间件的运行时间失败, %s", err)
 	}
 	fmt.Printf("server %s install %s information Update succeeded %s\n", h, u.Midtype, setInfoToDB)
 }

@@ -1,0 +1,13 @@
+[Unit]
+Description=Sabre schedule server daemon
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/sabreschedule
+KillMode=process
+Restart=on-failure
+RestartSec=42s
+
+[Install]
+WantedBy=multi-user.target

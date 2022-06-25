@@ -45,8 +45,4 @@ func Watch() {
 		go dbload.WatchFromDB(regx)
 		l.Log.Infof("Watch etcd key的名称为%s\n", regx)
 	}
-	// 主goroutine堵塞
-	//sig := make(chan os.Signal, 2)
-	//signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
-	//<-sig
 }
