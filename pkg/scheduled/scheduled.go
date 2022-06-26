@@ -2,10 +2,13 @@ package scheduled
 
 import (
 	"github.com/sevlyar/go-daemon"
+	"os"
+	"os/signal"
 	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct/res"
 	"sabre/pkg/util/commontools"
 	l "sabre/pkg/util/logbase/logscheduled"
+	"syscall"
 )
 
 type SabreSchedule interface {
@@ -18,6 +21,10 @@ type SabreSchedule interface {
 type Schedule struct {
 	Server    string
 	ApiVesion string
+}
+
+func Cron(m *commontools.Basest) (string, error) {
+	return "", nil
 }
 
 //Watch 监控ETCD中资源状态变化，发起调度逻辑
@@ -45,4 +52,8 @@ func Watch() {
 		go dbload.WatchFromDB(regx)
 		l.Log.Infof("Watch etcd key的名称为%s\n", regx)
 	}
+	// 主goroutine堵塞
+	sig := make(chan os.Signal, 2)
+	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
+	<-sig
 }

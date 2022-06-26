@@ -30,13 +30,13 @@ var cmdDeployTomcat = &cobra.Command{
 			CheckInstallServerBelongToNSErr := u.CheckInstallServerBelongToNS()
 			if CheckInstallServerBelongToNSErr != nil {
 				fmt.Printf("%s\n", CheckInstallServerBelongToNSErr)
-				os.Exit(-1)
+				return
 			}
 			// 信息入库
 			setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(yamlFmt))
 			if setInfoToDBErr != nil {
 				fmt.Printf("%s\n", setInfoToDBErr)
-				os.Exit(-1)
+				return
 			}
 			fmt.Printf("Tomcat information warehousing succeeded %s\n", setInfoToDB)
 

@@ -6,11 +6,11 @@ import (
 	"github.com/golang-module/carbon/v2"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"sabre/pkg/apiserver"
 	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct"
 	"sabre/pkg/util/commontools"
-	l "sabre/pkg/util/logbase/logscheduled"
 	"sabre/pkg/yamlfmt"
 	"strings"
 	"time"
@@ -55,20 +55,26 @@ func (u *Basest) CallSabreletByEachHost(s []string) {
 //s 为每台计算节点上的saberlet的监听地址
 //host 计算节点的ip地址
 func (u *Basest) CallSabrelet(s, host string) (string, error) {
+
+	getStatusReport, err := u.GetStatusReport(host, false)
+	if err != nil {
+		return "", err
+	}
+
 	insertDB := make(map[string]Basest)
 	// /mid/ERP/Tomcat
-	key := "/mid" + u.Namespace + "/" + u.Midtype
+	key := path.Join("/mid" + strings.ToUpper(u.Namespace) + strings.ToLower(u.Midtype))
 	insertDB[key] = *u
 	yml, ymlErr := yamlfmt.PrintResultJson(&insertDB)
 	if ymlErr != nil {
-		u.DeployHostStatus = append(u.DeployHostStatus, u.GetStatusReport(host, false))
+		u.DeployHostStatus = append(u.DeployHostStatus, getStatusReport)
 		return "", fmt.Errorf("ymal文件格式化失败, %s\n", ymlErr)
 	}
 	reqBody := strings.NewReader(string(yml))
 	httpReq, httpReqErr := http.NewRequest("POST", s, reqBody)
 	//fmt.Printf("请求sabrelet的地址为 %s, 请求报文%+v\n", s, reqBody)
 	if httpReqErr != nil {
-		u.DeployHostStatus = append(u.DeployHostStatus, u.GetStatusReport(host, false))
+		u.DeployHostStatus = append(u.DeployHostStatus, getStatusReport)
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v", s, reqBody, httpReqErr)
 
 	}
@@ -77,7 +83,7 @@ func (u *Basest) CallSabrelet(s, host string) (string, error) {
 	// DO: HTTP请求
 	httpRsp, httpRspErr := http.DefaultClient.Do(httpReq)
 	if httpRspErr != nil {
-		u.DeployHostStatus = append(u.DeployHostStatus, u.GetStatusReport(host, false))
+		u.DeployHostStatus = append(u.DeployHostStatus, getStatusReport)
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v", s, reqBody, httpRspErr)
 	}
 	defer httpRsp.Body.Close()
@@ -85,10 +91,10 @@ func (u *Basest) CallSabrelet(s, host string) (string, error) {
 	// Read: HTTP结果
 	rspBody, rspBodyErr := ioutil.ReadAll(httpRsp.Body)
 	if rspBodyErr != nil {
-		u.DeployHostStatus = append(u.DeployHostStatus, u.GetStatusReport(host, false))
+		u.DeployHostStatus = append(u.DeployHostStatus, getStatusReport)
 		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v, response:%s", s, reqBody, rspBodyErr, string(rspBody))
 	}
-	u.DeployHostStatus = append(u.DeployHostStatus, u.GetStatusReport(host, true))
+	u.DeployHostStatus = append(u.DeployHostStatus, getStatusReport)
 	u.ResolveCallSabreletResponse(u, host)
 	return string(rspBody), nil
 }
@@ -106,36 +112,38 @@ func (u *Basest) ResolveCallSabreletResponse(yml *Basest, h string) {
 		fmt.Printf("%s\n", setInfoToDBErr)
 		// TODO 如果retry失败如何处理
 	}
-	err := u.CalculateRunningDay(h)
-	if err != nil {
-		l.Log.Errorf("获取中间件的运行时间失败, %s", err)
-	}
 	fmt.Printf("server %s install %s information Update succeeded %s\n", h, u.Midtype, setInfoToDB)
 }
 
 //GetStatusReport 上报服务器状态
-func (u *Basest) GetStatusReport(host string, hostStatus bool) map[string]sabstruct.RunTimeStatus {
+func (u *Basest) GetStatusReport(host string, hostStatus bool) (map[string]sabstruct.RunTimeStatus, error) {
 	var s sabstruct.RunTimeStatus
 	status := make(map[string]sabstruct.RunTimeStatus)
 	s.StatusReportTimer = commontools.AddNowTime()
 	s.RunStatus = hostStatus
+	RunningDay, err := u.CalculateRunningDay(host)
+	if err != nil {
+		return nil, err
+	}
+
+	s.RunningDays = RunningDay
 	status[host] = s
-	return status
+	return status, nil
 }
 
 //CalculateRunningDay 获取服务器中中间件的运行时间
 //host 为当前主机的ip地址
-func (u *Basest) CalculateRunningDay(host string) error {
-	key := "/mid" + strings.ToUpper(u.Namespace) + "/" + strings.ToLower(u.Midtype)
+func (u *Basest) CalculateRunningDay(host string) (int, error) {
+	key := path.Join("/mid" + strings.ToUpper(u.Namespace) + strings.ToLower(u.Midtype))
 	typeInfoFromDB, getErr := dbload.GetKeyFromETCD(key, false)
 	if getErr != nil {
-		return getErr
+		return 0, getErr
 	}
 	// 从etcd中获取中间件的信息
 	for _, v := range typeInfoFromDB {
 		err := json.Unmarshal(v.Value, u)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		// 获取DeployHostStatus 判断当前主机的信息
 		for _, hStruct := range u.DeployHostStatus {
@@ -143,20 +151,13 @@ func (u *Basest) CalculateRunningDay(host string) error {
 				// 判断为当前主机信息，将库中的时间数据和当前时间对比
 				if h == host {
 					runningDays := carbon.Parse(hInfo.StatusReportTimer).DiffInDays(carbon.Parse(commontools.AddNowTime()))
-					hInfo.RunningDays = int(runningDays)
-					resultJson, resultJsonErr := yamlfmt.PrintResultJson(u)
-					if resultJsonErr != nil {
-
-					}
-					if setDBErr := dbload.SetIntoDB(key, string(resultJson)); setDBErr != nil {
-						return err
-					}
+					return int(runningDays), nil
 				}
 			}
 		}
 
 	}
-	return fmt.Errorf("failed to get runtime\n")
+	return 0, fmt.Errorf("failed to get runtime\n")
 }
 
 //CallFaceOfSabrelet 调用每台机器上的sabrelet
