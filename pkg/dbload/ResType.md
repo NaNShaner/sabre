@@ -1,5 +1,6 @@
 # 资源类型，定义etcd中的前缀
 格式：prefix + "/" + namespace + "/" + 资源类型 `[+ 资源提供方式]` `[+ 工程名称]`
+/registry/deployments/default/nginx-deployment，由 prefix + "/" + 资源类型 + "/" + namespace + "/" + 具体资源名
 ## ETCD中的数据结构
 - 应用容器
 

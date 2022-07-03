@@ -97,6 +97,7 @@ func SetIntoDB(k, v string) error {
 
 //WatchFromDB 通过API网关对etcd中的资源类型进行watch，进行后续调度
 func WatchFromDB(s string) {
+	L.Logfile = "dbload.log"
 	cli, err := GetDBCli()
 	if err != nil {
 		L.Log.Infof("connect failed, %s\n", err)

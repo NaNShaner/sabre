@@ -12,7 +12,6 @@ import (
 )
 
 //Deploy 用户及用户组(判断||新建)-下载安装包-解压-修改配置文件-安装校验(尝试启动，并进行健康检查，通过后关闭)
-//TODO：缺少必要的判断逻辑，1、需求安装的服务器列表是否已注册进入etcd、并且saberlet的状态正常；2、服务器列表是否均属于声明的系统及其网络安全域
 func Deploy(m *commontools.Basest) (string, error) {
 	if m.DeployAction.Action != "Install" {
 		return "", fmt.Errorf("yaml文件为声明Tomcat的安装行为%s\n", m.DeployAction.Action)
@@ -41,7 +40,7 @@ func Deploy(m *commontools.Basest) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Printf("==> 安装目录%s\n", unPackPath)
+
 	//修改catalina.sh
 	ChangeCatalinaShErr := ChangeCatalinaSh(m, unPackPath, "/bin/catalina.sh")
 	if ChangeCatalinaShErr != nil {
@@ -56,12 +55,10 @@ func Deploy(m *commontools.Basest) (string, error) {
 
 	// 启动Tomcat
 	startUp := path.Join(unPackPath + "/bin/startup.sh")
-	startMiddleware, err := m.ExecCmdWithTimeOut(startUp, time.Duration(3))
+	_, err = m.ExecCmdWithTimeOut(startUp, time.Duration(3))
 	if err != nil {
 		return "", err
 	}
-	//TODO 方便调试，后续删除
-	fmt.Printf("命令执行情况%s", startMiddleware)
 
 	return fmt.Sprintf("%s delopy done\n", m.Midtype), nil
 

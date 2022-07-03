@@ -1,14 +1,12 @@
 package callsabrelet
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/golang-module/carbon/v2"
 	"io/ioutil"
 	"net/http"
 	"path"
 	"sabre/pkg/apiserver"
-	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct"
 	"sabre/pkg/util/commontools"
 	"sabre/pkg/yamlfmt"
@@ -44,10 +42,12 @@ func (u *Basest) CallSabreletByEachHost(s []string) {
 	sabreletServerPort := "18081"
 	for _, host := range s {
 		sabreletUrl := "http://" + host + ":" + sabreletServerPort + "/hostInfo/Install"
-		_, err := u.CallSabrelet(sabreletUrl, host)
+		sab, err := u.CallSabrelet(sabreletUrl, host)
 		if err != nil {
+			fmt.Printf("===>%s<===", err)
 			return
 		}
+		fmt.Printf("===>%s<===", sab)
 	}
 }
 
@@ -56,15 +56,16 @@ func (u *Basest) CallSabreletByEachHost(s []string) {
 //host 计算节点的ip地址
 func (u *Basest) CallSabrelet(s, host string) (string, error) {
 
+	insertDB := make(map[string]Basest)
+	// /mid/ERP/Tomcat
+	key := path.Join("/mid" + strings.ToUpper(u.Namespace) + strings.ToLower(u.Midtype))
+	insertDB[key] = *u
+
 	getStatusReport, err := u.GetStatusReport(host, false)
 	if err != nil {
 		return "", err
 	}
 
-	insertDB := make(map[string]Basest)
-	// /mid/ERP/Tomcat
-	key := path.Join("/mid" + strings.ToUpper(u.Namespace) + strings.ToLower(u.Midtype))
-	insertDB[key] = *u
 	yml, ymlErr := yamlfmt.PrintResultJson(&insertDB)
 	if ymlErr != nil {
 		u.DeployHostStatus = append(u.DeployHostStatus, getStatusReport)
@@ -119,14 +120,12 @@ func (u *Basest) ResolveCallSabreletResponse(yml *Basest, h string) {
 func (u *Basest) GetStatusReport(host string, hostStatus bool) (map[string]sabstruct.RunTimeStatus, error) {
 	var s sabstruct.RunTimeStatus
 	status := make(map[string]sabstruct.RunTimeStatus)
-	s.StatusReportTimer = commontools.AddNowTime()
-	s.RunStatus = hostStatus
-	RunningDay, err := u.CalculateRunningDay(host)
-	if err != nil {
-		return nil, err
+	// 当etcd中的监控记录时间为空时，记录第一次开始监控的时间
+	if s.StatusReportTimer == "" {
+		s.StatusReportTimer = commontools.AddNowTime()
 	}
+	s.RunStatus = hostStatus
 
-	s.RunningDays = RunningDay
 	status[host] = s
 	return status, nil
 }
@@ -134,29 +133,39 @@ func (u *Basest) GetStatusReport(host string, hostStatus bool) (map[string]sabst
 //CalculateRunningDay 获取服务器中中间件的运行时间
 //host 为当前主机的ip地址
 func (u *Basest) CalculateRunningDay(host string) (int, error) {
-	key := path.Join("/mid" + strings.ToUpper(u.Namespace) + strings.ToLower(u.Midtype))
-	typeInfoFromDB, getErr := dbload.GetKeyFromETCD(key, false)
-	if getErr != nil {
-		return 0, getErr
-	}
-	// 从etcd中获取中间件的信息
-	for _, v := range typeInfoFromDB {
-		err := json.Unmarshal(v.Value, u)
-		if err != nil {
-			return 0, err
-		}
-		// 获取DeployHostStatus 判断当前主机的信息
-		for _, hStruct := range u.DeployHostStatus {
-			for h, hInfo := range hStruct {
-				// 判断为当前主机信息，将库中的时间数据和当前时间对比
-				if h == host {
-					runningDays := carbon.Parse(hInfo.StatusReportTimer).DiffInDays(carbon.Parse(commontools.AddNowTime()))
-					return int(runningDays), nil
-				}
+	fmt.Printf("==> \n%+v\n", u)
+	for _, hStruct := range u.DeployHostStatus {
+		for h, hInfo := range hStruct {
+			// 判断为当前主机信息，将库中的时间数据和当前时间对比
+			if h == host {
+				runningDays := carbon.Parse(hInfo.StatusReportTimer).DiffInDays(carbon.Parse(commontools.AddNowTime()))
+				return int(runningDays), nil
 			}
 		}
-
 	}
+	//key := path.Join("/mid" + strings.ToUpper(u.Namespace) + strings.ToLower(u.Midtype))
+	//typeInfoFromDB, getErr := dbload.GetKeyFromETCD(key, false)
+	//if getErr != nil {
+	//	return 0, getErr
+	//}
+	//// 从etcd中获取中间件的信息
+	//for _, v := range typeInfoFromDB {
+	//	err := json.Unmarshal(v.Value, u)
+	//	if err != nil {
+	//		return 0, err
+	//	}
+	//	// 获取DeployHostStatus 判断当前主机的信息
+	//	for _, hStruct := range u.DeployHostStatus {
+	//		for h, hInfo := range hStruct {
+	//			// 判断为当前主机信息，将库中的时间数据和当前时间对比
+	//			if h == host {
+	//				runningDays := carbon.Parse(hInfo.StatusReportTimer).DiffInDays(carbon.Parse(commontools.AddNowTime()))
+	//				return int(runningDays), nil
+	//			}
+	//		}
+	//	}
+	//
+	//}
 	return 0, fmt.Errorf("failed to get runtime\n")
 }
 

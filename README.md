@@ -1,11 +1,19 @@
 # Sabre (佩剑)
-以K8s的资源管理模式，全面纳管非云上的计算、存储以及网络资源。
+以IaC的方式，管理你想管理的资源。
 
 ## 项目简介
 ### 主要功能（当前功能）
 - 基于yaml文件完成Tomcat、JDK的资源以及启动脚本的部署
 
 ### 组件说明
+控制面 Master 节点主要包含以下组件：
+- kube-apiserver，负责对外提供集群各类资源的增删改查及 Watch 接口，它是 Kubernetes 集群中各组件数据交互和通信的枢纽。kube-apiserver 在设计上可水平扩展，高可用 Kubernetes 集群中一般多副本部署。当收到一个创建 Pod 写请求时，它的基本流程是对请求进行认证、限速、授权、准入机制等检查后，写入到 etcd 即可。
+- kube-scheduler 是调度器组件，负责集群 Pod 的调度。基本原理是通过监听 kube-apiserver 获取待调度的 Pod，然后基于一系列筛选和评优算法，为 Pod 分配最佳的 Node 节点。
+- kube-controller-manager 包含一系列的控制器组件，比如 Deployment、StatefulSet 等控制器。控制器的核心思想是监听、比较资源实际状态与期望状态是否一致，若不一致则进行协调工作使其最终一致。
+- etcd 组件，Kubernetes 的元数据存储。
+Node 节点主要包含以下组件：
+- kubelet，部署在每个节点上的 Agent 的组件，负责 Pod 的创建运行。基本原理是通过监听 APIServer 获取分配到其节点上的 Pod，然后根据 Pod 的规格详情，调用运行时组件创建 pause 和业务容器等。
+- kube-proxy，部署在每个节点上的网络代理组件。基本原理是通过监听 APIServer 获取 Service、Endpoint 等资源，基于 Iptables、IPVS 等技术实现数据包转发等功能。
 #### 控制节点
 - sabreapi
 
