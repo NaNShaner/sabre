@@ -64,10 +64,7 @@ func HttpReq(u *Basest) (string, error) {
 
 	etcdKey := u.RegxEtcdKey()
 	etcdValue := u.RegxEtcValue()
-	//fmt.Printf("HttpReq ==> k:%s \nv:+%v\n", etcdKey, etcdValue)
 	insertDB := make(map[string]Basest)
-	//dbInfo.Kname = etcdKey
-	//dbInfo.Vname = etcdValue
 
 	insertDB[etcdKey] = etcdValue
 	apiUrl := apiServer + "/midRegx/set"

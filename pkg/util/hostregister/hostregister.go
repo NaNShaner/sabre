@@ -129,7 +129,10 @@ func ValueName(h res.HostRegister, ip, belongTo, area string) (res.Hosts, error)
 //SetHttpReq 与API网关交互，将注册主机信息上送
 //主机注册时 etcdValue 为 res.hosts
 func SetHttpReq(etcdKey string, etcdValue interface{}) (string, error) {
-
+	// 判断主机是否被注册过
+	if err := IsHosted(etcdKey); err != nil {
+		return "", err
+	}
 	apiServer, apiServerErr := config.GetApiServerUrl()
 	if apiServerErr != nil || apiServer == "" {
 		return "", fmt.Errorf("saberlet server address not found in configuration file %s", apiServerErr)
@@ -152,14 +155,15 @@ func SetHttpReq(etcdKey string, etcdValue interface{}) (string, error) {
 
 	// DO: HTTP请求
 	httpRsp, httpRspErr := http.DefaultClient.Do(httpReq)
+	// 如果接口无法调通，是无法获取到 httpRsp.StatusCode
 	if httpRspErr != nil || httpRsp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v, req.status:%s", apiUrl, reqBody, err, httpRsp.Status)
+		return "", fmt.Errorf("do http fail, url: %s, reqBody: %+v, err:%v", apiUrl, reqBody, httpRspErr)
 	}
 	defer httpRsp.Body.Close()
 	// Read: HTTP结果
 	resFromServer, resFromServerErr := ioutil.ReadAll(httpRsp.Body)
 	if resFromServerErr != nil {
-		return "", fmt.Errorf("ReadAll failed, url: %s, reqBody: %+v, err: %v", apiUrl, reqBody, err)
+		return "", fmt.Errorf("ReadAll failed, url: %s, reqBody: %+v, err: %v", apiUrl, reqBody, resFromServerErr)
 	}
 	return fmt.Sprintf("Server %s registration succeeded", resFromServer), nil
 }
@@ -181,4 +185,16 @@ func AddHostToListSaveToDB(s string) (string, error) {
 		return "", fmt.Errorf("Failed to format %s as key of host list\n", s)
 	}
 	return path.Join("/", sSplit[1], sSplit[5], sSplit[6]), nil
+}
+
+//IsHosted 判断主机是否已经被注册
+func IsHosted(hosted string) error {
+	etcd, err := dbload.GetKeyFromETCD(hosted, false)
+	if err != nil {
+		return err
+	}
+	if len(etcd) != 0 {
+		return fmt.Errorf("Host %s has been registered\n", hosted)
+	}
+	return nil
 }

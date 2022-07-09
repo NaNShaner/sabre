@@ -6,7 +6,6 @@ import (
 	"os"
 	"sabre/pkg/apiserver"
 	"sabre/pkg/sabstruct"
-	"sabre/pkg/util/callsabrelet"
 	"sabre/pkg/util/commontools"
 	"sabre/pkg/yamlfmt"
 )
@@ -32,7 +31,7 @@ var cmdDeployTomcat = &cobra.Command{
 				fmt.Printf("%s\n", CheckInstallServerBelongToNSErr)
 				return
 			}
-			// 信息入库
+			// 信息入库，入库后由saberscheduled监听etcd中的数据变化，并调用sabrelet执行相应动作
 			setInfoToDB, setInfoToDBErr := apiserver.HttpReq((*apiserver.Basest)(yamlFmt))
 			if setInfoToDBErr != nil {
 				fmt.Printf("%s\n", setInfoToDBErr)
@@ -40,9 +39,9 @@ var cmdDeployTomcat = &cobra.Command{
 			}
 			fmt.Printf("Tomcat information warehousing succeeded %s\n", setInfoToDB)
 
-			b := (*callsabrelet.Basest)(yamlFmt)
-			callsabrelet.CallFaceOfSabrelet(b, u.DeployHost)
-			fmt.Printf("tomcat install done\n")
+			//b := (*callsabrelet.Basest)(yamlFmt)
+			//callsabrelet.CallFaceOfSabrelet(b, u.DeployHost)
+			//fmt.Printf("%s/tomcat install done\n", yamlFmt.Namespace)
 		}
 	},
 	// 命令执行前进行判断，类似django的post_save
