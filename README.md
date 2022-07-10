@@ -7,27 +7,18 @@
 
 ### 组件说明
 控制面 Master 节点主要包含以下组件：
-- kube-apiserver，负责对外提供集群各类资源的增删改查及 Watch 接口，它是 Kubernetes 集群中各组件数据交互和通信的枢纽。kube-apiserver 在设计上可水平扩展，高可用 Kubernetes 集群中一般多副本部署。当收到一个创建 Pod 写请求时，它的基本流程是对请求进行认证、限速、授权、准入机制等检查后，写入到 etcd 即可。
-- kube-scheduler 是调度器组件，负责集群 Pod 的调度。基本原理是通过监听 kube-apiserver 获取待调度的 Pod，然后基于一系列筛选和评优算法，为 Pod 分配最佳的 Node 节点。
-- kube-controller-manager 包含一系列的控制器组件，比如 Deployment、StatefulSet 等控制器。控制器的核心思想是监听、比较资源实际状态与期望状态是否一致，若不一致则进行协调工作使其最终一致。
-- etcd 组件，Kubernetes 的元数据存储。
+- sabreapi，负责对外提供集群各类资源的增删改查及 Watch 接口，sabreapi 在设计上可水平扩展，高可用。当收到一个创建 资源 写请求时，将信息进行校验并写入到 etcd 中。
+- sabrescheduler 是调度器组件，负责集群 资源 的调度。基本原理是通过监听 etcd 获取待调度的 资源，然后根据声明文件中的节点要求，将资源调度到资源归属的计算节点上。
+- etcd 组件，sabre 的元数据存储。
 Node 节点主要包含以下组件：
-- kubelet，部署在每个节点上的 Agent 的组件，负责 Pod 的创建运行。基本原理是通过监听 APIServer 获取分配到其节点上的 Pod，然后根据 Pod 的规格详情，调用运行时组件创建 pause 和业务容器等。
-- kube-proxy，部署在每个节点上的网络代理组件。基本原理是通过监听 APIServer 获取 Service、Endpoint 等资源，基于 Iptables、IPVS 等技术实现数据包转发等功能。
-#### 控制节点
-- sabreapi
+- sabrelet，部署在每个节点上的 Agent 的组件，负责 资源 的创建运行。基本原理是通过接收 sabrescheduler 调度命令，维护资源的声明周期。
+命令行工具：
+- sabrectl，可以部署在管理或者计算节点上，负责和sabreapi进行命令行的交互。
+![img.png](docs/imgs/sabre-install-tomcat.png)
 
-平台资源操作的唯一入口，接受用户输入的命令
-- sabreschedule 
+### 拓扑架构
+![img.png](docs/imgs/img.png)
 
-负责集群资源的调度，按照预定的调度策略将资源调度到相应的计算节点上
-#### 工作节点
-- sabrectl
-
-命令行程序
-- sabrelet
-
-部署在计算节点上，负责维护集群的状态，比如程序部署安排，故障检测，信息上送api
 ### 执行流程
 - 注册主机
 ```shell
@@ -81,8 +72,7 @@ CentOS Linux release 8.2
 go version go1.17.3 
 ```
 - 安装步骤
-# 拓扑架构
-![img.png](docs/imgs/img.png)
+
 
 # Todo list
 - [x] 中间单资源部署，已完成Tomcat、Jdk
