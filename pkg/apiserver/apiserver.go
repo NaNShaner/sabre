@@ -47,7 +47,7 @@ func (u *Basest) CellApiServer() error {
 //RegxEtcdKey 继续入库的key
 //TODO 判断资源类型，确定key
 func (u *Basest) RegxEtcdKey() string {
-	return path.Join(MidRegx, commontools.FmtETCDKey(u.Namespace), commontools.FmtETCDKey(u.Midtype))
+	return path.Join(MidRegx, strings.ToUpper(u.Namespace), commontools.FmtETCDKey(u.Midtype))
 }
 
 //RegxEtcValue 继续入库的value

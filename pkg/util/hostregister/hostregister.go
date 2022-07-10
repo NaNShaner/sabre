@@ -107,7 +107,7 @@ loop:
 func KeyName(n, h, a, i string) string {
 	regx := "/hosts"
 	resType := "/machine"
-	return path.Join(regx, commontools.FmtETCDKey(n), commontools.FmtETCDKey(resType), commontools.FmtETCDKey(a), commontools.FmtETCDKey(h), commontools.FmtETCDKey(i))
+	return path.Join(regx, strings.ToUpper(n), commontools.FmtETCDKey(resType), commontools.FmtETCDKey(a), commontools.FmtETCDKey(h), commontools.FmtETCDKey(i))
 }
 
 //ValueName 入库的value

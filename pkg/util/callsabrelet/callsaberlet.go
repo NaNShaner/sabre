@@ -58,7 +58,7 @@ func (u *Basest) CallSabrelet(s, host string) (string, error) {
 
 	insertDB := make(map[string]Basest)
 	// /mid/ERP/Tomcat
-	key := path.Join("/mid" + commontools.FmtETCDKey(u.Namespace) + commontools.FmtETCDKey(u.Midtype))
+	key := path.Join("/mid" + strings.ToUpper(u.Namespace) + commontools.FmtETCDKey(u.Midtype))
 	insertDB[key] = *u
 
 	getStatusReport, err := u.GetStatusReport(host, false)
