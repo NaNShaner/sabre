@@ -277,3 +277,11 @@ func GetKeyFromDB(kv []*mvccpb.KeyValue) []string {
 	}
 	return s
 }
+
+//FmtETCDKey 对入库的key进行格式化，第一个字母大写，其他的小写
+func FmtETCDKey(s string) string {
+	if s == "" {
+		return ""
+	}
+	return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
+}

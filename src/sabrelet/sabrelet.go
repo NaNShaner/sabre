@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sevlyar/go-daemon"
 	"log"
+	sabrelet_local_service "sabre/pkg/sabrelet-local-service"
 	"sabre/pkg/util/hostregister"
 )
 
@@ -42,6 +43,7 @@ func main() {
 	if runErr != nil {
 		return
 	}
+	sabrelet_local_service.TimeLoopExecution()
 	// 主goroutine堵塞
 	//sig := make(chan os.Signal, 2)
 	//signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)

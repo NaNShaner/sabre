@@ -41,6 +41,10 @@ type Hosts struct {
 	BelongTo string
 	//Area 主机所属网络区域
 	Area string
+	//InstallMidType 机器上安装的中间件类型
+	InstallMidType string
+	//AppName 应用名称
+	AppName string
 	//Annotation 其他声明，例如冷备节点
 	Annotation []string
 	MonitorStatus

@@ -7,9 +7,11 @@ import (
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"sabre/pkg/config"
 	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct"
+	"sabre/pkg/util/commontools"
 	"sabre/pkg/yamlfmt"
 	"strings"
 )
@@ -45,7 +47,7 @@ func (u *Basest) CellApiServer() error {
 //RegxEtcdKey 继续入库的key
 //TODO 判断资源类型，确定key
 func (u *Basest) RegxEtcdKey() string {
-	return strings.Join([]string{MidRegx, u.Namespace, u.Midtype}, "/")
+	return path.Join(MidRegx, commontools.FmtETCDKey(u.Namespace), commontools.FmtETCDKey(u.Midtype))
 }
 
 //RegxEtcValue 继续入库的value

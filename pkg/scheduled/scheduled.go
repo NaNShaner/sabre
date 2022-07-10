@@ -2,6 +2,7 @@ package scheduled
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/sevlyar/go-daemon"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -13,7 +14,6 @@ import (
 	"sabre/pkg/util/callsabrelet"
 	"sabre/pkg/util/commontools"
 	L "sabre/pkg/util/logbase/logscheduled"
-	"sabre/pkg/yamlfmt"
 	"strings"
 	"syscall"
 )
@@ -63,8 +63,7 @@ func Watch() {
 
 	rs := res.Register()
 	for _, regx := range rs.ResRegx {
-		go WatchFromDB(regx)
-		L.Log.Infof("Watch etcd key的名称为%s\n", regx)
+		WatchFromDB(regx)
 	}
 	// 主goroutine堵塞
 	sig := make(chan os.Signal, 2)
@@ -74,10 +73,9 @@ func Watch() {
 
 //WatchFromDB 通过API网关对etcd中的资源类型进行watch，进行后续调度
 func WatchFromDB(s string) {
-	L.Logfile = "dbload.log"
 	cli, err := dbload.GetDBCli()
 	if err != nil {
-		L.Log.Infof("connect failed, %s\n", err)
+		fmt.Printf("connect failed, %s\n", err)
 		return
 	}
 	defer cli.Close()
@@ -88,21 +86,22 @@ func WatchFromDB(s string) {
 		for wresp := range rch {
 			err = wresp.Err()
 			if err != nil {
-				L.Log.Infof("etcd watch response err, %s\n", err)
+				fmt.Printf("etcd watch response err, %s\n", err)
 			}
 			for _, ev := range wresp.Events {
-				L.Log.Info("%s %q %q\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
-				keySplit, err := keySplit(ev.Kv.Key)
+				fmt.Printf("%s %q %q\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+				keySplit := keySplit(ev.Kv.Key)
 				if err != nil {
 					return
 				}
 				switch {
 				// 判断etcd中的变化的key的类型，枚举值
 				case isMidType(keySplit):
-					L.Log.Infof("isMidType: %s\n", ev.Kv.Key)
+					fmt.Printf("isMidType: %s\n", ev.Kv.Key)
 					switch {
 					case isMidTypeOfTomcat(keySplit):
-						DoActionOfMidType(string(ev.Kv.Value))
+						fmt.Printf("start install Tomcat\n")
+						DoActionOfMidType(ev.Kv.Value)
 					}
 				case isMidHost(keySplit):
 					L.Log.Infof("isMidHost: %s\n", ev.Kv.Key)
@@ -116,22 +115,21 @@ func WatchFromDB(s string) {
 }
 
 //DoActionOfMidType 针对不同中间件类型执行安装动作
-func DoActionOfMidType(s string) {
-	yamlFmt, err := yamlfmt.YamlFmt(s, sabstruct.Config{})
+func DoActionOfMidType(s []byte) {
+	fmt.Printf("调度安装Tomcat 信息：%s\n", s)
+	var yamlFmt sabstruct.Config
+	err := json.Unmarshal(s, &yamlFmt)
 	if err != nil {
+		fmt.Printf("调度安装Tomcat 失败%+v\n", yamlFmt)
 		return
 	}
-	b := (*callsabrelet.Basest)(yamlFmt)
-	callsabrelet.CallFaceOfSabrelet(b, b.DeployHost)
+	b := (callsabrelet.Basest)(yamlFmt)
+	fmt.Printf("-=-=-=-%+v\n", yamlFmt)
+	callsabrelet.CallFaceOfSabrelet(&b, b.DeployHost)
 }
 
-func keySplit(t []byte) (string, error) {
-	s := string(t)
-	sSplit := strings.Split(s, "/")
-	if len(sSplit) < 1 {
-		return "", fmt.Errorf("Etcd key %s is not in normal format\n", s)
-	}
-	return sSplit[1], nil
+func keySplit(t []byte) string {
+	return string(t)
 }
 
 func isMidType(t string) bool {

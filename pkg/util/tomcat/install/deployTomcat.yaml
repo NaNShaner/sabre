@@ -29,3 +29,4 @@ spec:
         action: Install
         deployhost:
             - 192.168.3.58
+            - 192.168.3.182

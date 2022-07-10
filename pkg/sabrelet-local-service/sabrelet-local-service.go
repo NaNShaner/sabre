@@ -7,16 +7,19 @@ import (
 	"net"
 	"path"
 	"sabre/pkg/dbload"
+	"sabre/pkg/sabstruct"
 	"sabre/pkg/sabstruct/res"
 	"sabre/pkg/util/commontools"
+	"sabre/pkg/yamlfmt"
 	"strings"
+	"time"
 )
 
 var (
 	hostPrex = "/hosts"
 )
 
-var h res.MonitorStatus
+//var h res.MonitorStatus
 
 //LocalServerName 获取本机服务器主机名
 func LocalServerName() (string, error) {
@@ -27,8 +30,8 @@ func LocalServerName() (string, error) {
 	return localServerName, nil
 }
 
-//GetInfoList 获取本机服务器IP地址
-func GetInfoList(hostname string) (string, error) {
+//GetHostIP 获取本机服务器IP地址
+func GetHostIP(hostname string) (string, error) {
 
 	queryKey := path.Join(hostPrex, hostname)
 	getKeyFromETCD, err := dbload.GetKeyFromETCD(queryKey, true)
@@ -51,8 +54,8 @@ func GetInfoList(hostname string) (string, error) {
 	return "", fmt.Errorf("Failed to resolve server IP address from etcd, query key value is %s\n", queryKey)
 }
 
-//QueryDB 通过qureyKey 查询数据库，获取
-func QueryDB(hostname, hostip string) (string, error) {
+//GetServerBelongToNSFromQueryDB 通过qureyKey 查询数据库，获取
+func GetServerBelongToNSFromQueryDB(hostname, hostip string) (string, error) {
 	qureyKey := path.Join(hostPrex, hostname, hostip)
 
 	getKeyFromETCD, err := dbload.GetKeyFromETCD(qureyKey, false)
@@ -74,62 +77,144 @@ func CalculateIntervalDays(s string) int {
 
 //ReportHostSabreletStatus 周期性上报当前服务器的sabrelet的状态
 //TODO：逻辑待补充
-func ReportHostSabreletStatus(r string) (res.Hosts, error) {
+//func ReportHostSabreletStatus(r string) (res.Hosts, error) {
+//
+//	var rs res.Hosts
+//
+//	getKeyFromETCD, err := dbload.GetKeyFromETCD(r, false)
+//	if err != nil {
+//		return res.Hosts{}, err
+//	}
+//
+//	if len(getKeyFromETCD) != 1 {
+//		return res.Hosts{}, fmt.Errorf("query multiple matching data in the database")
+//	}
+//	for _, value := range getKeyFromETCD {
+//
+//		jsonUnmarshalErr := json.Unmarshal(value.Value, &rs)
+//		if jsonUnmarshalErr != nil {
+//			return res.Hosts{}, jsonUnmarshalErr
+//		}
+//		fmt.Printf("==>%+v\n", rs)
+//		getMem, getMemErr := rs.GetMem()
+//		if getMemErr != nil {
+//			return res.Hosts{}, getMemErr
+//		}
+//
+//		rs.Mem = getMem
+//		rs.OnlineDay = CalculateIntervalDays(rs.OnlineTime)
+//
+//		return rs, nil
+//
+//	}
+//	return res.Hosts{}, fmt.Errorf("failed to report current server status\n")
+//}
 
-	var rs res.Hosts
-
-	getKeyFromETCD, err := dbload.GetKeyFromETCD(r, false)
-	if err != nil {
-		return res.Hosts{}, err
+//HostStatusReturnKeyValue 根据kName获取数据库中的value，并return k，v
+func HostStatusReturnKeyValue() (string, string, error) {
+	localServerName, getServerNameErr := LocalServerName()
+	if getServerNameErr != nil {
+		return "", "", getServerNameErr
 	}
 
-	if len(getKeyFromETCD) != 1 {
-		return res.Hosts{}, fmt.Errorf("query multiple matching data in the database")
+	hostIP, getHostIPErr := GetHostIP(localServerName)
+	if getHostIPErr != nil {
+		return "", "", getHostIPErr
 	}
-	for _, value := range getKeyFromETCD {
 
-		jsonUnmarshalErr := json.Unmarshal(value.Value, &rs)
-		if jsonUnmarshalErr != nil {
-			return res.Hosts{}, jsonUnmarshalErr
-		}
-		fmt.Printf("==>%+v\n", rs)
-		getMem, getMemErr := rs.GetMem()
-		if getMemErr != nil {
-			return res.Hosts{}, getMemErr
-		}
-
-		rs.Mem = getMem
-		rs.OnlineDay = CalculateIntervalDays(rs.OnlineTime)
-
-		return rs, nil
-
+	kName, getServerBelongToNSFromQueryDBErr := GetServerBelongToNSFromQueryDB(localServerName, hostIP)
+	if getServerBelongToNSFromQueryDBErr != nil {
+		return "", "", getServerBelongToNSFromQueryDBErr
 	}
-	return res.Hosts{}, fmt.Errorf("failed to report current server status\n")
+
+	kValueFromEtcd, getKeyFromETCDErr := dbload.GetKeyFromETCD(kName, false)
+	if getKeyFromETCDErr != nil {
+		return "", "", getKeyFromETCDErr
+	}
+
+	if len(kValueFromEtcd) == 0 {
+		return "", "", fmt.Errorf("The server %s has not been registered and does not belong to any NS\n", kName)
+	}
+
+	if len(kValueFromEtcd) != 1 {
+		return "", "", fmt.Errorf("The data in the database is not unique, query key is %s, please check\n", kName)
+	}
+	for _, value := range kValueFromEtcd {
+		return kName, string(value.Value), nil
+	}
+	return "", "", fmt.Errorf("")
 }
 
-//func ReportHostStatus() {
-//	hostName, getHostNameErr := commontools.GetLocalServerName()
-//	if getHostNameErr != nil {
-//		fmt.Println(getHostNameErr)
-//		os.Exit(-1)
-//	}
-//	kName := KeyName(namespace, hostName, area, f)
-//	valueName, err := ValueName(&h, f, namespace, area)
-//	if err != nil {
-//		fmt.Printf("%s\n", err)
-//		os.Exit(-1)
-//	}
-//	v := make(map[string]res.Hosts)
-//	v[kName] = valueName
-//	//json, err := yamlfmt.PrintResultJson(v)
-//	//if err != nil {
-//	//	return
-//	//}
-//	//fmt.Printf("%s\n", json)
-//	reqResp, setHttpReqErr := hostregister.SetHttpReq(kName, valueName)
-//	if setHttpReqErr != nil {
-//		fmt.Printf("请求sabrelet 失败,%s\n", setHttpReqErr)
-//		os.Exit(-1)
-//	}
-//	fmt.Printf("%s\n", reqResp)
-//}
+func UpdateHostedInfoToETCD() error {
+	var yamlFmt res.Hosts
+	//var yamlFmt sabstruct.Config
+	kName, kValue, err := HostStatusReturnKeyValue()
+	if err != nil {
+		return err
+	}
+
+	UnmarshalErr := json.Unmarshal([]byte(kValue), &yamlFmt)
+	if UnmarshalErr != nil {
+		return UnmarshalErr
+	}
+	//v := make(map[string]res.Hosts)
+	//json, err := yamlfmt.PrintResultJson(v)
+	//if err != nil {
+	//	return
+	//}
+	//fmt.Printf("%s\n", json)
+
+	getMem, getMemErr := yamlFmt.GetMem()
+	if getMemErr != nil {
+		return getMemErr
+	}
+
+	yamlFmt.Mem = getMem
+	yamlFmt.OnlineDay = CalculateIntervalDays(yamlFmt.OnlineTime)
+
+	y, err := yamlfmt.PrintResultJson(yamlFmt)
+	if err != nil {
+		return err
+	}
+
+	setDbErr := dbload.SetIntoDB(kName, string(y))
+	if setDbErr != nil {
+		return setDbErr
+	}
+
+	fmt.Printf("Server %s information reported successfully, %s\n", kName, y)
+	return nil
+}
+
+func UpdateMidInfoToETCD() error {
+	var yamlFmt sabstruct.Config
+
+	localServerName, err := LocalServerName()
+	if err != nil {
+		return err
+	}
+
+	hostIP, err := GetHostIP(localServerName)
+	if err != nil {
+		return err
+	}
+
+	for _, hostStatus := range yamlFmt.DeployHostStatus {
+		for server, serverStatus := range hostStatus {
+			if server == hostIP {
+				serverStatus.RunningDays = CalculateIntervalDays(yamlFmt.DeployAction.Timer)
+			}
+		}
+	}
+	return nil
+}
+
+func TimeLoopExecution() {
+	for {
+		err := UpdateHostedInfoToETCD()
+		if err != nil {
+			fmt.Printf("TimeLoopExecution exec failed ==> %s\n", err)
+		}
+		time.Sleep(2 * time.Second)
+	}
+}
