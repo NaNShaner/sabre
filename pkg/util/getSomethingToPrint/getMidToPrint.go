@@ -18,16 +18,18 @@ import (
 //MNPP		127.0.0.2 	Tomcat 	demo		8099	7.0.78 	True	True	10d
 
 type OutPutInfo struct {
-	ResType     string
-	Namespace   string
-	Host        string
-	MidType     string
-	NetArea     string
-	AppName     string
-	Port        string
-	MidVersion  string
-	Monitor     bool
-	Running     bool
+	ResType    string
+	Namespace  string
+	Host       string
+	MidType    string
+	NetArea    string
+	AppName    string
+	Port       string
+	MidVersion string
+	Monitor    bool
+	Running    bool
+	//RunningTime 运行时间
+	//TODO 每次重启需要重置，目前是根据第一次启动时间算起
 	RunningTime string
 }
 
@@ -80,17 +82,17 @@ func UseKeyGetInfoFromDB(s string) ([]OutPutInfo, error) {
 			O.Port = sab.ListeningPort
 			O.MidVersion = sab.Version
 			O.Monitor = true
-			O.RunningTime = "10d"
+
 			for _, hstatus := range sab.DeployHostStatus {
 				for h, hInfo := range hstatus {
 					if h == host {
 						O.Running = hInfo.RunStatus
+						O.RunningTime = string(rune(hInfo.RunningDays)) + "d"
 					}
 				}
 			}
 			getOutPutInfo = append(getOutPutInfo, O)
 		}
-
 	}
 	return getOutPutInfo, nil
 }
