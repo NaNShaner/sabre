@@ -176,7 +176,7 @@ func UpdateHostedInfoToETCD() error {
 	if err != nil {
 		return err
 	}
-
+	// TODO 未经过API server
 	setDbErr := dbload.SetIntoDB(kName, string(y))
 	if setDbErr != nil {
 		return setDbErr
@@ -202,6 +202,7 @@ func UpdateMidInfoToETCD() error {
 	for _, hostStatus := range yamlFmt.DeployHostStatus {
 		for server, serverStatus := range hostStatus {
 			if server == hostIP {
+				serverStatus.RunStatus = true
 				serverStatus.RunningDays = CalculateIntervalDays(yamlFmt.DeployAction.Timer)
 			}
 		}

@@ -6,6 +6,8 @@ import (
 	"path"
 	"sabre/pkg/dbload"
 	"sabre/pkg/sabstruct"
+	"sabre/pkg/util/commontools"
+	"strings"
 )
 
 //### 例如：获取erp系统的下的demo工程部署在哪些机器的Tomcat中
@@ -39,11 +41,11 @@ var (
 )
 
 //PrintFmt 接收命令行参数,将etcd中的数据格式化后输出到终端
-//r 资源类型，例如 mid
-//n 系统简称，例如 ERP
-//m 资源种类，例如 Tomcat
+//r 资源类型，例如 mid , 固定格式，全为小写
+//n 系统简称，例如 ERP ， 固定格式，全为大写
+//m 资源种类，例如 Tomcat ， 固定格式，第一个字母大写，其他小写
 func PrintFmt(r, n, m string) error {
-	dbKey := path.Join("/", r, n, m)
+	dbKey := path.Join("/", strings.ToLower(r), strings.ToUpper(n), commontools.FmtETCDKey(m))
 	willOutPutResult, getOutPutResultErr := UseKeyGetInfoFromDB(dbKey)
 	if getOutPutResultErr != nil {
 		return getOutPutResultErr
