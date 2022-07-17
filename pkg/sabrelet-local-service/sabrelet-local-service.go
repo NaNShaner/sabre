@@ -170,6 +170,7 @@ func UpdateHostedInfoToETCD() error {
 	}
 
 	yamlFmt.Mem = getMem
+	fmt.Printf("-=-=-=- %d -=-=-=-\n", CalculateIntervalDays(yamlFmt.OnlineTime))
 	yamlFmt.OnlineDay = CalculateIntervalDays(yamlFmt.OnlineTime)
 
 	y, err := yamlfmt.PrintResultJson(yamlFmt)

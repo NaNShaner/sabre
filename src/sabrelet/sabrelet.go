@@ -37,13 +37,14 @@ func main() {
 	defer cntxt.Release()
 
 	log.Print("sabrelet daemon started.")
-
+	// 后台监控
+	go sabrelet_local_service.TimeLoopExecution()
 	listenPort := "18081"
 	runErr := router.Run(":" + listenPort)
 	if runErr != nil {
 		return
 	}
-	sabrelet_local_service.TimeLoopExecution()
+
 	// 主goroutine堵塞
 	//sig := make(chan os.Signal, 2)
 	//signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
